@@ -11,6 +11,8 @@ jobs:
   build_and_publish:
     needs: tests
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout to release-candidate
         uses: actions/checkout@v3
@@ -27,7 +29,6 @@ jobs:
       - name: Build
         run: package --build-number
       - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@v1.8.6
         with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
