@@ -1,2 +1,3 @@
-__version__ = '0.1.0'
+'''Tools for testing, building readme and packaging'''
+__version__ = '0.2.0'
 from ._API import *

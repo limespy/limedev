@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # type: ignore
+'''Updating the pyproject.toml metadata and packaging into wheel and
+source distributions'''
 #%%═════════════════════════════════════════════════════════════════════
 # IMPORT
-import pathlib
 import re
 import sys
 import time
@@ -15,29 +16,25 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-def main(args = sys.argv[1:]):
-    path_cwd = pathlib.Path.cwd()
-    try:
-        path_pyproject = next(path_cwd.rglob('pyproject.toml'))
-    except StopIteration:
-        print(f'Tests not found under {path_cwd}')
+from ._aux import _import_from_path
+from ._aux import _upsearch
+from ._aux import PATH_BASE
 
-    path_base = path_pyproject.parent
-    path_readme = path_base / 'readme.md'
+def main(args = sys.argv[1:]) -> None: # pylint: disable=dangerous-default-value
+    '''Command line interface entry point. Builds README and the package'''
+    if (path_pyproject := _upsearch('pyproject.toml')) is None:
+        raise FileNotFoundError('pyproject.toml not found')
 
-    sys.path.insert(1, str(path_base))
-    if (path_base_str := str(path_base)) not in sys.path[:3]:
-        sys.path.insert(1, path_base_str)
-    import readme
+    path_readme = PATH_BASE / 'README.md'
     #%%═════════════════════════════════════════════════════════════════════
     # BUILD INFO
 
     # Loading the pyproject TOML file
     pyproject = tomllib.loads(path_pyproject.read_text())
     project_info = pyproject['project']
-    path_package_init = next((path_base / 'src').rglob('__init__.py'))
     version = re.search(r"(?<=__version__ = ').*(?=')",
-                        path_package_init.read_text())[0]
+                        next((PATH_BASE / 'src').rglob('__init__.py')
+                             ).read_text())[0]
 
     if '--build-number' in args:
         version += f'.{time.time():.0f}'
@@ -51,7 +48,8 @@ def main(args = sys.argv[1:]):
         source_main_url = source_url + '/blob/main/'
     #───────────────────────────────────────────────────────────────────────
     # Long Description
-    readme_text = str(readme.make(project_info)) + '\n'
+    user_readme  = _import_from_path(PATH_BASE / 'readme' / 'readme.py').main
+    readme_text = str(user_readme(project_info)) + '\n'
     readme_text_pypi = readme_text.replace('./', source_main_url)
     #%%═════════════════════════════════════════════════════════════════════
     # RUNNING THE BUILD
@@ -59,12 +57,12 @@ def main(args = sys.argv[1:]):
     pyproject['project'] = project_info
     path_pyproject.write_text(tomli_w.dumps(pyproject))
 
-    for path in (path_base / 'dist').glob('*'):
+    for path in (PATH_BASE / 'dist').glob('*'):
         path.unlink()
 
     path_readme.write_text(readme_text_pypi)
 
-    if not '--no-build' in args:
+    if '--no-build' not in args:
         build.main([])
 
     path_readme.write_text(readme_text)

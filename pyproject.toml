@@ -24,7 +24,7 @@ authors = [
 ]
 requires-python = ">=3.9"
 readme = "README.md"
-version = "0.1.0"
+version = "0.2.0"
 dynamic = [
     "dependencies",
     "optional-dependencies",
@@ -33,6 +33,7 @@ dynamic = [
 [project.scripts]
 package = "limedev.package:main"
 test = "limedev.test:main"
+readme = "limedev.readme:main"
 
 [project.urls]
 Homepage = "https://github.com/Limespy/limedev"
@@ -41,7 +42,7 @@ Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 
 [tool.setuptools.dynamic.dependencies]
 file = [
-    "dependencies/main.txt",
+    "dependencies/_main.txt",
 ]
 
 [tool.setuptools.dynamic.optional-dependencies.dev]
@@ -49,3 +50,12 @@ file = "dependencies/dev.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.build]
 file = "dependencies/build.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.package]
+file = "dependencies/package.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.readme]
+file = "dependencies/readme.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test]
+file = "dependencies/test.txt"
