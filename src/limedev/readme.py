@@ -6,6 +6,11 @@ from typing import Iterable
 from typing import Optional
 
 import yamdog as md
+
+from ._aux import _import_from_path
+from ._aux import _upsearch
+from ._aux import PATH_BASE
+
 #=======================================================================
 
 re_heading = re.compile(r'^#* .*$')
@@ -73,6 +78,7 @@ def make_changelog(level: int, path_changelog: pathlib.Path, version: str):
         else:
             raise ValueError('Changelog not up to date')
 
+        # Updating the changelog file
         path_changelog.write_text(str(changelog) + '\n')
 
         for item in changelog:
@@ -105,9 +111,14 @@ def make(package,
 
     if readme_body is not None:
         doc += readme_body
+    if (path_changelog := _upsearch('*changelog.md',
+                                    pathlib.Path(package.__file__).parent,
+                                    deep = True)) is None:
+        raise FileNotFoundError('Changelog not found')
 
-    path_changelog = next(pathlib.Path(package.__file__).parent.parent.parent.rglob('*changelog.md'))
-    doc += make_changelog(1, path_changelog, package.__version__)
+    doc += make_changelog(1,
+                          path_changelog,
+                          package.__version__)
 
     if annexes is not None:
         doc += make_annexes(annexes)
@@ -118,5 +129,21 @@ def make_annexes(annexes: Iterable[tuple[Any, Any]]):
     for index, (heading_content, body) in enumerate(annexes, start = 1):
         doc += md.Heading(2, f'Annex {index}: {heading_content}')
         doc += body
-#=======================================================================
     return doc
+#=======================================================================
+def main():
+
+    try:
+        import tomllib
+    except ModuleNotFoundError:
+        import tomli as tomllib # type: ignore
+    user_readme  = _import_from_path(PATH_BASE / 'readme' / 'readme.py').main
+    PATH_README = PATH_BASE / 'README.md'
+    PATH_PYPROJECT = PATH_BASE / 'pyproject.toml'
+
+    PATH_README.write_text(str(user_readme(tomllib.loads(PATH_PYPROJECT.read_text())['project']))
+                           + '\n')
+    return 0
+#=======================================================================
+if __name__ == '__main__':
+    raise SystemExit(main())

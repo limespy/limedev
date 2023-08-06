@@ -38,7 +38,13 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.1.0 2023-05-13 <!-- omit in toc -->
+## 0.2.0 2023-08-06 <!-- omit in toc -->
+
+- Bugfixes
+- Cleaner structure
+- Reworked readme build
+
+## 0.1.0 2023-05-04 <!-- omit in toc -->
 
 - Initial assembly of the tools
 
