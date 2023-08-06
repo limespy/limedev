@@ -1,3 +1,4 @@
+'''Helper functions and values for other modules'''
 import pathlib
 from importlib import util
 from typing import Iterable

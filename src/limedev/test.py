@@ -1,14 +1,11 @@
+'''Test invokers'''
 #%%=====================================================================
 # IMPORT
 import os
 import pathlib
 import sys
-from importlib import import_module
 from typing import Callable
-from typing import Iterable
-from typing import NoReturn
 from typing import Optional
-from typing import Union
 
 import yaml # type: ignore
 
@@ -22,40 +19,41 @@ TEST_FOLDER_NAME = 'tests'
 
 #%%=====================================================================
 def _get_path_config(patterns, path_start):
+    '''Loads test configuration file paths or supplies default if not found'''
     return (PATH_CONFIGS / patterns[0]
             if (path_local := _upsearch(patterns, path_start)) is None
             else path_local)
 #==============================================================================
 def unittests(path_tests: pathlib.Path) -> None:
-    import pytest
+    '''Starts pytest unit tests'''
+    import pytest # pylint: disable=import-outside-toplevel
     CWD = pathlib.Path.cwd()
     os.chdir(str(path_tests / 'unittests'))
     pytest.main(["--cov=numba_integrators", "--cov-report=html"])
     os.chdir(str(CWD))
-    return None
 #==============================================================================
 def typing(path_tests: pathlib.Path) -> Optional[tuple[str, str, int]]:
+    '''Starts mypy typing tests'''
     args = [str(path_tests.parent / 'src'),
             '--config-file',
             str(_get_path_config(('mypy.ini',), path_tests))]
-    from mypy.main import main
-    main(args = args)
-    return None
+    from mypy.main import main as mypy # pylint: disable=import-outside-toplevel
+    mypy(args = args)
 #==============================================================================
 def lint(path_tests: pathlib.Path) -> None:
-    from pylint import lint # type: ignore
-    lint.Run([str(path_tests.parent / 'src'),
-              f'--rcfile={str(_get_path_config((".pylintrc",), path_tests))}',
-              '--output-format=colorized',
-              '--msg-template="{path}:{line}:{column}:{msg_id}:{symbol}\n'
+    '''Starts pylin linter'''
+    from pylint import lint as linter # type: ignore # pylint: disable=import-outside-toplevel
+    linter.Run([str(path_tests.parent / 'src'),
+                f'--rcfile={str(_get_path_config((".pylintrc",), path_tests))}',
+                '--output-format=colorized',
+                '--msg-template="{path}:{line}:{column}:{msg_id}:{symbol}\n'
                               '    {msg}"'])
-    return None
 #=======================================================================
 def profiling(path_tests: pathlib.Path) -> None:
-
-    import cProfile
-    import gprof2dot # type: ignore
-    import subprocess
+    '''Runs profiling and converts results into a PDF'''
+    import cProfile # pylint: disable=import-outside-toplevel
+    import gprof2dot # type: ignore # pylint: disable=import-outside-toplevel
+    import subprocess # pylint: disable=import-outside-toplevel
 
     profile_run = _import_from_path(path_tests / 'profiling.py').main
 
@@ -73,28 +71,30 @@ def profiling(path_tests: pathlib.Path) -> None:
     path_pstats.unlink()
     try:
         subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
-    except FileNotFoundError:
-        raise RuntimeError('Conversion to PDF failed, maybe graphviz dot program is not installed. http://www.graphviz.org/download/')
+    except FileNotFoundError as exc:
+        raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
+                           ' program is not installed.'
+                           ' See http://www.graphviz.org/download/') from exc
     path_dot.unlink()
-    return None
 #==============================================================================
 def performance(path_tests: pathlib.Path) -> None:
-    performance = _import_from_path(path_tests / 'performance.py').main
+    '''Runs performance tests and save sresults into YAML file'''
+    performance_tests = _import_from_path(path_tests / 'performance.py').main
     path_performance_data = path_tests / 'performance.yaml'
-    version, results = performance()
-    if not path_performance_data.exists():
-        path_performance_data.touch()
-    with open(path_performance_data, encoding = 'utf8', mode = 'rw') as f:
-        data = yaml.safe_load(f)
+    version, results = performance_tests()
+    with open(path_performance_data, encoding = 'utf8', mode = 'w+') as f:
+        if (data := yaml.safe_load(f)) is None:
+            data = {}
+        f.seek(0)
         data[version] = results
         f.write(yaml.safe_dump(data))
-    return None
+        f.truncate()
 #==============================================================================
 TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
                               for function in
                               (lint, unittests, typing, profiling, performance)}
-def main(args: list[str] = sys.argv[1:]) -> int:
-
+def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
+    '''Command line interface entry point'''
     if (path_tests := _upsearch(TEST_FOLDER_NAME)) is None:
         raise FileNotFoundError('Tests not found')
 
