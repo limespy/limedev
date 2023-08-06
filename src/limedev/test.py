@@ -10,6 +10,9 @@ from typing import NoReturn
 from typing import Optional
 from typing import Union
 
+import yaml # type: ignore
+
+from ._aux import _import_from_path
 from ._aux import _upsearch
 
 PATH_CONFIGS = pathlib.Path(__file__).parent / 'configs'
@@ -37,22 +40,24 @@ def typing(path_tests: pathlib.Path) -> Optional[tuple[str, str, int]]:
             str(_get_path_config(('mypy.ini',), path_tests))]
     from mypy.main import main
     main(args = args)
+    return None
 #==============================================================================
 def lint(path_tests: pathlib.Path) -> None:
-    from pylint import lint
+    from pylint import lint # type: ignore
     lint.Run([str(path_tests.parent / 'src'),
               f'--rcfile={str(_get_path_config((".pylintrc",), path_tests))}',
               '--output-format=colorized',
               '--msg-template="{path}:{line}:{column}:{msg_id}:{symbol}\n'
                               '    {msg}"'])
+    return None
 #=======================================================================
 def profiling(path_tests: pathlib.Path) -> None:
-    import subprocess
 
     import cProfile
-    import gprof2dot
+    import gprof2dot # type: ignore
+    import subprocess
 
-    profile_run = import_module(f'{TEST_FOLDER_NAME}.profiling').main
+    profile_run = _import_from_path(path_tests / 'profiling.py').main
 
     path_profile = path_tests / 'profile'
     path_pstats = path_profile.with_suffix('.pstats')
@@ -71,16 +76,27 @@ def profiling(path_tests: pathlib.Path) -> None:
     except FileNotFoundError:
         raise RuntimeError('Conversion to PDF failed, maybe graphviz dot program is not installed. http://www.graphviz.org/download/')
     path_dot.unlink()
+    return None
+#==============================================================================
+def performance(path_tests: pathlib.Path) -> None:
+    performance = _import_from_path(path_tests / 'performance.py').main
+    path_performance_data = path_tests / 'performance.yaml'
+    version, results = performance()
+    if not path_performance_data.exists():
+        path_performance_data.touch()
+    with open(path_performance_data, encoding = 'utf8', mode = 'rw') as f:
+        data = yaml.safe_load(f)
+        data[version] = results
+        f.write(yaml.safe_dump(data))
+    return None
 #==============================================================================
 TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
                               for function in
-                              (lint, unittests, typing, profiling)}
+                              (lint, unittests, typing, profiling, performance)}
 def main(args: list[str] = sys.argv[1:]) -> int:
 
     if (path_tests := _upsearch(TEST_FOLDER_NAME)) is None:
         raise FileNotFoundError('Tests not found')
-
-    sys.path.insert(1, str(path_tests.parent))
 
     if not args:
         return 0
@@ -88,7 +104,7 @@ def main(args: list[str] = sys.argv[1:]) -> int:
         if arg.startswith('--'):
             name = arg[2:]
             if (function := TESTS.get(name)) is None:
-                import_module(f'{TEST_FOLDER_NAME}.{name}').main()
+                _import_from_path(path_tests / f'{name}.py').main()
             else:
                 function(path_tests)
     return 0

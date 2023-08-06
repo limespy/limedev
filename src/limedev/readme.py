@@ -5,7 +5,7 @@ from typing import Any
 from typing import Iterable
 from typing import Optional
 
-import yamdog as md
+import yamdog as md # type: ignore
 
 from ._aux import _import_from_path
 from ._aux import _upsearch

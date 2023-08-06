@@ -18,7 +18,7 @@ from ._aux import _import_from_path
 from ._aux import _upsearch
 from ._aux import PATH_BASE
 
-def main(args = sys.argv[1:]):
+def main(args = sys.argv[1:]) -> None:
 
     if (path_pyproject := _upsearch('pyproject.toml')) is None:
         raise FileNotFoundError('pyproject.toml not found')
@@ -31,7 +31,7 @@ def main(args = sys.argv[1:]):
     pyproject = tomllib.loads(path_pyproject.read_text())
     project_info = pyproject['project']
     version = re.search(r"(?<=__version__ = ').*(?=')",
-                        next((path_base / 'src').rglob('__init__.py')
+                        next((PATH_BASE / 'src').rglob('__init__.py')
                              ).read_text())[0]
 
     if '--build-number' in args:
