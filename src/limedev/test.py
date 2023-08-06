@@ -87,7 +87,7 @@ def performance(path_tests: pathlib.Path) -> None:
             data = {}
         f.seek(0)
         data[version] = results
-        f.write(yaml.safe_dump(data))
+        yaml.safe_dump(data, f, sort_keys = False, default_flow_style = False)
         f.truncate()
 #==============================================================================
 TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
