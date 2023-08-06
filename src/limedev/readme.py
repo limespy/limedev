@@ -54,7 +54,7 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
     '''Builds setup guide from metadata'''
     doc = md.Document([
         md.Heading('Quick start guide', 1),
-        "Here's how you can start numerically ",
+        "Here's how you can start ",
         md.Heading('The first steps', 2),
         md.Heading('Installing', 3),
         f'Install {name} with pip',
