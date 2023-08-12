@@ -14,6 +14,7 @@ from ._aux import _upsearch
 
 PATH_CONFIGS = pathlib.Path(__file__).parent / 'configs'
 TEST_FOLDER_NAME = 'tests'
+PERFORMANCE_NAME = 'performance'
 #%%=====================================================================
 # TEST CASES
 
@@ -79,10 +80,10 @@ def profiling(path_tests: pathlib.Path) -> None:
 #==============================================================================
 def performance(path_tests: pathlib.Path) -> None:
     '''Runs performance tests and save sresults into YAML file'''
-    performance_tests = _import_from_path(path_tests / 'performance.py').main
-    path_performance_data = path_tests / 'performance.yaml'
+    performance_tests = _import_from_path(path_tests / f'{PERFORMANCE_NAME}.py').main
+    path_performance_data = path_tests / f'{PERFORMANCE_NAME}.yaml'
     version, results = performance_tests()
-    with open(path_performance_data, encoding = 'utf8', mode = 'w+') as f:
+    with open(path_performance_data, encoding = 'utf8', mode = 'r+') as f:
         if (data := yaml.safe_load(f)) is None:
             data = {}
         f.seek(0)

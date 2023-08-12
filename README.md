@@ -16,7 +16,7 @@ LimeDev is collection tools for Python development. These tools are more or less
 
 # Quick start guide
 
-Here's how you can start numerically
+Here's how you can start
 
 ## The first steps
 
@@ -37,6 +37,14 @@ import limedev
 ```
 
 # Changelog <!-- omit in toc -->
+
+## 0.2.2 2023-08-12 <!-- omit in toc -->
+
+- Fix to performance test deleting previous performance data
+
+## 0.2.0 2023-08-06 <!-- omit in toc -->
+
+- Performance results dump sorting fix
 
 ## 0.2.0 2023-08-06 <!-- omit in toc -->
 
