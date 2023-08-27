@@ -23,17 +23,17 @@ class Test_test:
     def test_unittests(self):
         environment = os.environ.copy()
         environment[SELF_TEST_FLAG] = ''
-        subprocess.run(['test', f'--unittests'], env = environment)
+        subprocess.run(['test', f'unittests'], env = environment)
     # ------------------------------------------------------------------
     def test_profile(self):
-        subprocess.run(['test', '--profiling'])
+        subprocess.run(['test', 'profiling'])
     # ------------------------------------------------------------------
     def test_typing(self):
-        subprocess.run(['test', '--typing'])
+        subprocess.run(['test', 'typing'])
     # ------------------------------------------------------------------
     def test_performance(self):
-        subprocess.run(['test', '--performance'])
+        subprocess.run(['test', 'performance'])
     # ------------------------------------------------------------------
     def test_lint(self):
-        subprocess.run(['test', '--lint'])
+        subprocess.run(['test', 'lint'])
     # ------------------------------------------------------------------
