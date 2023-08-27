@@ -38,7 +38,10 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.2.2 2023-08-27 <!-- omit in toc -->
+## 0.3.0 2023-08-27 <!-- omit in toc -->
+
+- Change to testing interface
+# 0.2.2 2023-08-27
 
 - Fix to performance test deleting previous performance data
 
