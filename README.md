@@ -38,6 +38,10 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.4.0 2023-09-23 <!-- omit in toc -->
+
+- Changed profiler to scalene
+
 ## 0.3.0 2023-08-27 <!-- omit in toc -->
 
 - Change to testing interface

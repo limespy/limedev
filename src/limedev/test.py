@@ -41,15 +41,16 @@ def _parse_options(args: list[str], keyword: dict[str, Any]) -> list[str]:
 def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pytest unit tests."""
     import pytest # pylint: disable=import-outside-toplevel
+    path_unittests = path_tests / 'unittests'
     for arg in args:
         if arg.startswith('--cov'):
-            path_report = path_tests / 'unittests' / 'htmlcov'
-            options = _parse_options(args, {'cov-report': f'"html:{path_report}"'})
+            path_report = path_unittests / 'htmlcov'
+            options = _parse_options(args, {'cov-report': f'html:"{path_report}"'})
             break
     else:
         options = args
 
-    pytest.main([str(path_tests / 'unittests')] + options)
+    pytest.main([str(path_unittests)] + options)
     return 0
 #==============================================================================
 def typing(path_tests: pathlib.Path, args: list[str]) -> int:
@@ -65,7 +66,7 @@ def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pylin linter."""
     from pylint import lint # type: ignore # pylint: disable=import-outside-toplevel
     options = {'rcfile': str(_get_path_config(('.pylintrc',), path_tests)),
-               'output': 'colorized',
+               'output-format': 'colorized',
                'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
                                   '    {msg}"'}
     lint.Run([str(path_tests.parent / 'src')] + _parse_options(args, options))
@@ -171,8 +172,7 @@ def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-def
 
     if (function := TESTS.get(name)) is None:
         return _import_from_path(path_tests / f'{name}.py').main(args)
-    else:
-        return function(path_tests, args)
+    return function(path_tests, args)
 #==============================================================================
 if __name__ == '__main__':
     raise SystemExit(main())
