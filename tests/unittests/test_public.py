@@ -6,7 +6,7 @@ import pytest
 
 SELF_TEST_FLAG = 'LIMEDEV_SELF_TEST'
 SELF_TEST_SKIP = pytest.mark.skipif(SELF_TEST_FLAG in os.environ,
-                                    reason = "Self test")
+                                    reason = 'Self test')
 
 @SELF_TEST_SKIP
 def test_package():

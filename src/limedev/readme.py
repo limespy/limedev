@@ -1,4 +1,4 @@
-'''For generating readme.md file'''
+"""For generating readme.md file."""
 import datetime
 import pathlib
 import re
@@ -17,19 +17,20 @@ from ._aux import PATH_BASE
 re_heading = re.compile(r'^#* .*$')
 
 def parse_md_element(text: str):
-    '''Verys simple parser able to parse part of markdown syntax into YAMDOG objects'''
+    """Verys simple parser able to parse part of markdown syntax into YAMDOG
+    objects."""
     if match := re_heading.match(text):
         hashes, content = match[0].split(' ', 1)
         return md.Heading(content, len(hashes))
     return md.Raw(text)
 #-----------------------------------------------------------------------
 def parse_md(text: str):
-    '''Loops md parser'''
+    """Loops md parser."""
     return md.Document([parse_md_element(item.strip())
                         for item in text.split('\n\n')])
 #=======================================================================
 def make_intro(full_name, pypiname, semi_description) -> md.Document:
-    '''Builds intro from metadata'''
+    """Builds intro from metadata."""
 
     shields_url = 'https://img.shields.io/'
 
@@ -51,7 +52,7 @@ def make_intro(full_name, pypiname, semi_description) -> md.Document:
 #=======================================================================
 def make_setup_guide(name, pypiname, package_name, abbreviation = None
                      ) -> md.Document:
-    '''Builds setup guide from metadata'''
+    """Builds setup guide from metadata."""
     doc = md.Document([
         md.Heading('Quick start guide', 1),
         "Here's how you can start ",
@@ -76,7 +77,7 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
 #=======================================================================
 def make_changelog(level: int, path_changelog: pathlib.Path, version: str
                    ) -> md.Document:
-    '''Loads changelog and reformats it for README document'''
+    """Loads changelog and reformats it for README document."""
     doc = md.Document([md.Heading('Changelog', level, in_TOC = False)])
     changelog = parse_md(path_changelog.read_text())
     if changelog:
@@ -105,9 +106,9 @@ def make(package,
          readme_body: Any = None,
          annexes: Optional[Iterable[tuple[Any, Any]]] = None,
          ) -> md.Document:
-    '''Builds a README document from given metadata and contents'''
+    """Builds a README document from given metadata and contents."""
     if name is None:
-        name = package.__name__.capitalise()
+        name = package.__name__.capitalize()
     if pypiname is None:
         pypiname = package.__name__
     doc = make_intro(name, pypiname, semi_description)
@@ -132,7 +133,7 @@ def make(package,
     return doc
 #=======================================================================
 def make_annexes(annexes: Iterable[tuple[Any, Any]]):
-    '''Formats annexes into sections'''
+    """Formats annexes into sections."""
     doc = md.Document([md.Heading('Annexes', 1)])
     for index, (heading_content, body) in enumerate(annexes, start = 1):
         doc += md.Heading(2, f'Annex {index}: {heading_content}')
@@ -140,7 +141,7 @@ def make_annexes(annexes: Iterable[tuple[Any, Any]]):
     return doc
 #=======================================================================
 def main():
-    '''Command line interface entry point'''
+    """Command line interface entry point."""
     try:
         import tomllib # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:

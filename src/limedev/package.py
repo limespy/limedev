@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # type: ignore
-'''Updating the pyproject.toml metadata and packaging into wheel and
-source distributions'''
+"""Updating the pyproject.toml metadata and packaging into wheel and source
+distributions."""
 #%%═════════════════════════════════════════════════════════════════════
 # IMPORT
 import re
@@ -21,7 +21,10 @@ from ._aux import _upsearch
 from ._aux import PATH_BASE
 
 def main(args = sys.argv[1:]) -> None: # pylint: disable=dangerous-default-value
-    '''Command line interface entry point. Builds README and the package'''
+    """Command line interface entry point.
+
+    Builds README and the package
+    """
     if (path_pyproject := _upsearch('pyproject.toml')) is None:
         raise FileNotFoundError('pyproject.toml not found')
 

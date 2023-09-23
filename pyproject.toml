@@ -42,20 +42,20 @@ Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 
 [tool.setuptools.dynamic.dependencies]
 file = [
-    "dependencies/_main.txt",
+    "dependencies/requirements.txt",
 ]
 
 [tool.setuptools.dynamic.optional-dependencies.dev]
-file = "dependencies/dev.txt"
+file = "dependencies/requirements_dev.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.build]
-file = "dependencies/build.txt"
+file = "dependencies/requirements_build.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.package]
-file = "dependencies/package.txt"
+file = "dependencies/requirements_package.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.readme]
-file = "dependencies/readme.txt"
+file = "dependencies/requirements_readme.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test]
-file = "dependencies/test.txt"
+file = "dependencies/requirements_test.txt"
