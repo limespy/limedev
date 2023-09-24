@@ -14,7 +14,7 @@ from ._aux import _upsearch
 PATH_BASE = pathlib.Path(__file__).parent
 PATH_CONFIGS = PATH_BASE / 'configs'
 TEST_FOLDER_NAME = 'tests'
-BENCHMARKING_NAME = 'benchmarking'
+BenchmarkResultsType = tuple[str, dict[str, int | float | str | list | dict]]
 #%%=====================================================================
 # TEST CASES
 
@@ -41,11 +41,13 @@ def _parse_options(args: list[str], keyword: dict[str, Any]) -> list[str]:
 def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pytest unit tests."""
     import pytest # pylint: disable=import-outside-toplevel
+
     path_unittests = path_tests / 'unittests'
+
     for arg in args:
         if arg.startswith('--cov'):
-            path_report = path_unittests / 'htmlcov'
-            options = _parse_options(args, {'cov-report': f'html:"{path_report}"'})
+            options = _parse_options(args, {'cov-report':
+                                            f'html:tests/unittests/htmlcov'})
             break
     else:
         options = args
@@ -72,81 +74,117 @@ def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     lint.Run([str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
 #=======================================================================
+def _run_profiling(function: Callable[[], Any],
+                   path_pstats,
+                   path_dot,
+                   path_pdf,
+                   is_warmup: bool,
+                   cProfile,
+                   gprof2dot,
+                   gprof2dot_args: list[str],
+                   subprocess) -> None:
+
+    if is_warmup: # Prep to eliminate first run overhead
+        function()
+
+    with cProfile.Profile() as pr:
+        function()
+    pr.dump_stats(path_pstats)
+
+    gprof2dot.main(gprof2dot_args)
+    path_pstats.unlink()
+    try:
+        subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
+    except FileNotFoundError as exc:
+        raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
+                        ' program is not installed.'
+                        ' See http://www.graphviz.org/download/') from exc
+    path_dot.unlink()
+# ----------------------------------------------------------------------
 def profiling(path_tests: pathlib.Path, args: list[str]) -> int:
     """Runs profiling and converts results into a PDF."""
     import cProfile # pylint: disable=import-outside-toplevel
     import gprof2dot # type: ignore # pylint: disable=import-outside-toplevel
     import subprocess # pylint: disable=import-outside-toplevel
+    # parsing arguments
+    path_profiling = (pathlib.Path(args[0])
+                      if args and not args[0].startswith('--')
+                      else path_tests / 'profiling.py')
 
-    path_profiling = path_tests / 'profiling.py'
-    path_profiles_folder = path_tests / 'profiles'
-
-    profile_module = _import_from_path(path_profiling)
-
-    functions = [(name, attr) for name, attr in profile_module.__dict__.items()
-                 if not name.startswith('_') and callable(attr)]
-    # options = _parse_options(args, {'cpu': '',
-    #                                 'memory': '',
-    #                                 'reduced-profile': '',
-    #                                 'module-path': f'"{path_profiling}"'})
     is_warmup = True
-    for i, arg in enumerate(args):
+    function_name = ''
+
+    index = len(args)
+    for arg in reversed(args):
+        index -= 1
         if arg == '--no-warmup':
-            args.pop(i)
+            args.pop(index)
             is_warmup = False
-            break
+        elif arg.startswith('--function='):
+            args.pop(index)
+            function_name = arg[11:]
 
-    for name, function in functions:
-        print(f'Profiling "{name}"')
-        # subprocess.run(['scalene', str(PATH_BASE / '_profiling.py'), f'--function={name}'] + options)
+    path_profiles_folder = path_profiling.parent / 'profiles'
+    functions = {name: attr for name, attr
+                 in _import_from_path(path_profiling).__dict__.items()
+                 if not name.startswith('_') and callable(attr)}
 
-        if not path_profiles_folder.exists():
-            path_profiles_folder.mkdir()
+    if not path_profiles_folder.exists():
+        path_profiles_folder.mkdir()
 
-        path_profile = path_profiles_folder / name
-        path_pstats = path_profile.with_suffix('.pstats')
-        path_dot = path_profile.with_suffix('.dot')
-        path_pdf = path_profile.with_suffix('.pdf')
+    path_pstats = path_profiles_folder / '.pstats'
+    path_dot = path_profiles_folder / '.dot'
 
-        if is_warmup: # Prep to eliminate first run overhead
-            function()
+    gprof2dot_args = [str(path_pstats)] + _parse_options(args,
+                                                         {'format': 'pstats',
+                                                          'node-thres': '1',
+                                                          'output': path_dot})
 
-        with cProfile.Profile() as pr:
-            function()
+    if function_name:
+        print(f'Profiling {function_name}')
+        _run_profiling(functions[function_name],
+                       path_pstats,
+                       path_dot,
+                       path_profiles_folder / f'{function_name}.pdf',
+                       is_warmup,
+                       cProfile,
+                       gprof2dot,
+                       gprof2dot_args,
+                       subprocess)
+        return 0
 
-        pr.dump_stats(path_pstats)
-
-        options = {'format': 'pstats',
-                   'node-thres': '1',
-                   'output': path_dot}
-
-        gprof2dot.main([str(path_pstats)] + _parse_options(args, options))
-        path_pstats.unlink()
-        try:
-            subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
-        except FileNotFoundError as exc:
-            raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
-                            ' program is not installed.'
-                            ' See http://www.graphviz.org/download/') from exc
-        path_dot.unlink()
+    for name, function in functions.items():
+        print(f'Profiling {name}')
+        _run_profiling(function,
+                       path_pstats,
+                       path_dot,
+                       path_profiles_folder / f'{name}.pdf',
+                       is_warmup,
+                       cProfile,
+                       gprof2dot,
+                       gprof2dot_args,
+                       subprocess)
     return 0
 #==============================================================================
 def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
     """Runs performance tests and save results into YAML file."""
 
     path_benchmarks = (pathlib.Path(args[0]) if args
-                       else path_tests / f'{BENCHMARKING_NAME}.py')
+                       else path_tests / 'benchmarking.py')
 
     benchmark = _import_from_path(path_benchmarks).main
-    path_performance_data = path_benchmarks.with_suffix('yaml')
+    path_performance_data = path_benchmarks.with_suffix('.yaml')
 
     version, results = benchmark()
 
     if not path_performance_data.exists():
         path_performance_data.touch()
+
     with open(path_performance_data, encoding = 'utf8', mode = 'r+') as f:
+
         if (data := yaml.safe_load(f)) is None:
             data = {}
+
         f.seek(0)
         data[version] = results
         yaml.safe_dump(data, f, sort_keys = False, default_flow_style = False)
@@ -162,8 +200,8 @@ TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
                                benchmarking)}
 def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     """Command line interface entry point."""
-    if (path_tests := _upsearch(TEST_FOLDER_NAME)) is None:
-        raise FileNotFoundError('Tests not found')
+
+    path_tests = _upsearch(TEST_FOLDER_NAME)
 
     if not args:
         return 0
@@ -171,6 +209,8 @@ def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-def
     name = args.pop(0)
 
     if (function := TESTS.get(name)) is None:
+        if path_tests is None:
+            raise FileNotFoundError('Test folder not found')
         return _import_from_path(path_tests / f'{name}.py').main(args)
     return function(path_tests, args)
 #==============================================================================
