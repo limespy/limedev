@@ -54,7 +54,7 @@ def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
 
     pytest.main([str(path_unittests)] + options)
     return 0
-#==============================================================================
+# ======================================================================
 def typing(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts mypy typing tests."""
     options = {'config-file': _get_path_config(('mypy.ini',), path_tests)}
@@ -63,7 +63,7 @@ def typing(path_tests: pathlib.Path, args: list[str]) -> int:
 
     mypy(args = [str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
-#==============================================================================
+# ======================================================================
 def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pylin linter."""
     from pylint import lint # type: ignore # pylint: disable=import-outside-toplevel
@@ -73,7 +73,7 @@ def linting(path_tests: pathlib.Path, args: list[str]) -> int:
                                   '    {msg}"'}
     lint.Run([str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
-#=======================================================================
+# ======================================================================
 def _run_profiling(function: Callable[[], Any],
                    path_pstats,
                    path_dot,
@@ -173,9 +173,10 @@ def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
                        else path_tests / 'benchmarking.py')
 
     benchmark = _import_from_path(path_benchmarks).main
-    path_performance_data = path_benchmarks.with_suffix('.yaml')
 
     version, results = benchmark()
+
+    path_performance_data = path_benchmarks.with_suffix('.yaml')
 
     if not path_performance_data.exists():
         path_performance_data.touch()
@@ -190,7 +191,7 @@ def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
         yaml.safe_dump(data, f, sort_keys = False, default_flow_style = False)
         f.truncate()
     return 0
-#==============================================================================
+# ======================================================================
 TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
                               for function in
                               (linting,
@@ -198,6 +199,7 @@ TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
                                typing,
                                profiling,
                                benchmarking)}
+# ----------------------------------------------------------------------
 def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     """Command line interface entry point."""
 
@@ -213,6 +215,6 @@ def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-def
             raise FileNotFoundError('Test folder not found')
         return _import_from_path(path_tests / f'{name}.py').main(args)
     return function(path_tests, args)
-#==============================================================================
+# ----------------------------------------------------------------------
 if __name__ == '__main__':
     raise SystemExit(main())
