@@ -14,7 +14,7 @@ from ._aux import _upsearch
 from ._aux import PATH_CONFIGS
 
 TEST_FOLDER_NAME = 'tests'
-BenchmarkResultsType = tuple[str, dict[str, Any]]
+BenchmarkResultsType = tuple[str, dict[str, int | float | list | dict]]
 #%%=====================================================================
 # TEST CASES
 
