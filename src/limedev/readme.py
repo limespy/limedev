@@ -6,18 +6,17 @@ from typing import Any
 from typing import Iterable
 from typing import Optional
 
-import yamdog as md # type: ignore
+import yamdog as md
 
 from ._aux import _import_from_path
 from ._aux import _upsearch
 from ._aux import PATH_BASE
 
 #=======================================================================
-
 re_heading = re.compile(r'^#* .*$')
-
+# ----------------------------------------------------------------------
 def parse_md_element(text: str):
-    """Verys simple parser able to parse part of markdown syntax into YAMDOG
+    """Very simple parser able to parse part of markdown syntax into YAMDOG
     objects."""
     if match := re_heading.match(text):
         hashes, content = match[0].split(' ', 1)
@@ -32,15 +31,14 @@ def parse_md(text: str):
 def make_intro(full_name, pypiname, semi_description) -> md.Document:
     """Builds intro from metadata."""
 
-    shields_url = 'https://img.shields.io/'
-
     pypi_project_url = f'https://pypi.org/project/{pypiname}'
     pypi_badge_info = (('v', 'PyPI Package latest release'),
                        ('wheel', 'PyPI Wheel'),
                        ('pyversions', 'Supported versions'),
                        ('implementation', 'Supported implementations'))
     pypi_badges = [md.Link(pypi_project_url,
-                           md.Image(f'{shields_url}pypi/{code}/{pypiname}.svg',
+                           md.Image(f'https://img.shields.io/pypi/'
+                                    f'{code}/{pypiname}.svg',
                                     desc), 'Project PyPI page')
                    for code, desc in pypi_badge_info]
     doc = md.Document([md.Paragraph(pypi_badges, '\n'),

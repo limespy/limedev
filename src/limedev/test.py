@@ -6,15 +6,15 @@ import sys
 from typing import Any
 from typing import Callable
 
-import yaml # type: ignore
+import yaml
 
+from ._aux import _argumentparser
 from ._aux import _import_from_path
 from ._aux import _upsearch
+from ._aux import PATH_CONFIGS
 
-PATH_BASE = pathlib.Path(__file__).parent
-PATH_CONFIGS = PATH_BASE / 'configs'
 TEST_FOLDER_NAME = 'tests'
-BenchmarkResultsType = tuple[str, dict[str, int | float | str | list | dict]]
+BenchmarkResultsType = tuple[str, dict[str, Any]]
 #%%=====================================================================
 # TEST CASES
 
@@ -26,16 +26,10 @@ def _get_path_config(patterns, path_start):
             else path_local)
 # ======================================================================
 def _parse_options(args: list[str], keyword: dict[str, Any]) -> list[str]:
-    positional = []
-    if args:
-        for arg in args:
-            if arg.startswith('--'):
-                key, _, value = arg[2:].partition('=')
-                keyword[key] = value
-            else:
-                positional.append(arg)
+    positional, keyword = _argumentparser(args)
+
     positional.extend((f'--{key}{"=" if value else ""}{value}'
-                            for key, value in keyword.items()))
+                       for key, value in keyword.items()))
     return positional
 # ======================================================================
 def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
@@ -46,8 +40,8 @@ def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
 
     for arg in args:
         if arg.startswith('--cov'):
-            options = _parse_options(args, {'cov-report':
-                                            f'html:tests/unittests/htmlcov'})
+            options = _parse_options(args,
+                                     {'cov-report': 'html:tests/unittests/htmlcov'})
             break
     else:
         options = args
@@ -59,14 +53,14 @@ def typing(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts mypy typing tests."""
     options = {'config-file': _get_path_config(('mypy.ini',), path_tests)}
 
-    from mypy.main import main as mypy # pylint: disable=import-outside-toplevel
+    from mypy.main import main as mypy # pylint: disable=import-outside-toplevel disable=no-name-in-module
 
     mypy(args = [str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
 # ======================================================================
 def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pylin linter."""
-    from pylint import lint # type: ignore # pylint: disable=import-outside-toplevel
+    from pylint import lint # pylint: disable=import-outside-toplevel
     options = {'rcfile': str(_get_path_config(('.pylintrc',), path_tests)),
                'output-format': 'colorized',
                'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
@@ -101,10 +95,10 @@ def _run_profiling(function: Callable[[], Any],
                         ' See http://www.graphviz.org/download/') from exc
     path_dot.unlink()
 # ----------------------------------------------------------------------
-def profiling(path_tests: pathlib.Path, args: list[str]) -> int:
+def profiling(path_tests: pathlib.Path, args: list[str]) -> int: # pylint: disable=too-many-locals
     """Runs profiling and converts results into a PDF."""
     import cProfile # pylint: disable=import-outside-toplevel
-    import gprof2dot # type: ignore # pylint: disable=import-outside-toplevel
+    import gprof2dot # pylint: disable=import-outside-toplevel
     import subprocess # pylint: disable=import-outside-toplevel
     # parsing arguments
     path_profiling = (pathlib.Path(args[0])
@@ -192,7 +186,7 @@ def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
         f.truncate()
     return 0
 # ======================================================================
-TESTS: dict[str, Callable] = {function.__name__: function # type: ignore
+TESTS: dict[str, Callable] = {function.__name__: function
                               for function in
                               (linting,
                                unittests,
