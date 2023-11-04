@@ -1,9 +1,8 @@
 """Helper functions and values for other modules."""
 import pathlib
+from collections.abc import Iterable
 from importlib import util
 from types import ModuleType
-from typing import Iterable
-from typing import Optional
 from typing import Union
 
 PATH_BASE = pathlib.Path(__file__).parent
@@ -12,7 +11,7 @@ PATH_CONFIGS = PATH_BASE / 'configs'
 # ======================================================================
 def _upsearch(patterns: Union[str, Iterable[str]],
               path_search = pathlib.Path.cwd(),
-              deep = False) -> Optional[pathlib.Path]:
+              deep = False) -> pathlib.Path | None:
     """Searches for pattern gradually going up the path."""
     path_previous = pathlib.Path()
     if isinstance(patterns, str):
@@ -46,7 +45,8 @@ def _import_from_path(path_module: pathlib.Path) -> ModuleType:
     spec.loader.exec_module(module) # type: ignore
     return module
 # ======================================================================
-def _argumentparser(args_in: list[str]):
+def _argumentparser(args_in: Iterable[str]
+                    ) -> tuple[list[str], dict[str, str]]:
     args = []
     kwargs = {}
     for arg in args_in:

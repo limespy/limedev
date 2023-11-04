@@ -7,20 +7,20 @@ from . import CLI
 from ._aux import PATH_CONFIGS
 from ._aux import PATH_REPO
 # ======================================================================
-def install(path_repo: str | pathlib.Path = pathlib.Path.cwd()) -> int:
+def install(path_repo: str | pathlib.Path = PATH_REPO) -> int:
     """Copies configurations from the defaults."""
-    import shutil # pylint: disable=import-outside-toplevel
-    import subprocess # pylint: disable=import-outside-toplevel
+    import shutil
+    import subprocess
 
     # test configs
     for path_source in PATH_CONFIGS.rglob('*'):
         if path_source.is_file():
             shutil.copyfile(path_source,
-                            PATH_REPO / path_source.relative_to(PATH_CONFIGS))
+                            path_repo / path_source.relative_to(PATH_CONFIGS))
 
     subprocess.run(['pre-commit', 'install'])
     return 0
 # ======================================================================
-def main(args: Sequence[str] = sys.argv[1:]) -> int:
+def main(args: Sequence[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     """Main command line entry point."""
     return CLI.function_cli(args, module = __name__)

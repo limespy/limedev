@@ -4,7 +4,9 @@ from types import ModuleType
 
 from ._aux import _argumentparser
 # ======================================================================
-def function_cli(args = sys.argv[1:], module: str | ModuleType = '__main__') -> int:
+def function_cli(args = sys.argv[1:], # pylint: disable=dangerous-default-value
+                 module: str | ModuleType = '__main__'
+                 ) -> int:
     """Functions as main able to run functions matching signature and generate
     helptext."""
     if isinstance(module, str):

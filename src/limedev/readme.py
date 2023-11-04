@@ -10,8 +10,7 @@ import yamdog as md
 
 from ._aux import _import_from_path
 from ._aux import _upsearch
-from ._aux import PATH_BASE
-
+from ._aux import PATH_REPO
 #=======================================================================
 re_heading = re.compile(r'^#* .*$')
 # ----------------------------------------------------------------------
@@ -138,15 +137,15 @@ def make_annexes(annexes: Iterable[tuple[Any, Any]]):
         doc += body
     return doc
 #=======================================================================
-def main():
+def main() -> int:
     """Command line interface entry point."""
     try:
         import tomllib # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
-    user_readme  = _import_from_path(PATH_BASE / 'readme' / 'readme.py').main
-    PATH_README = PATH_BASE / 'README.md'
-    PATH_PYPROJECT = PATH_BASE / 'pyproject.toml'
+    user_readme  = _import_from_path(PATH_REPO / 'readme' / 'readme.py').main
+    PATH_README = PATH_REPO / 'README.md'
+    PATH_PYPROJECT = PATH_REPO / 'pyproject.toml'
 
     PATH_README.write_text(str(user_readme(tomllib.loads(PATH_PYPROJECT.read_text())['project']))
                            + '\n')

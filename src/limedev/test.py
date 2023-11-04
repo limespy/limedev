@@ -7,6 +7,7 @@ from collections.abc import Callable
 from collections.abc import Sequence
 from types import ModuleType
 from typing import Any
+from typing import cast
 from typing import TypeAlias
 
 import yaml
@@ -15,12 +16,16 @@ from ._aux import _argumentparser
 from ._aux import _import_from_path
 from ._aux import _upsearch
 from ._aux import PATH_CONFIGS
+from .CLI import function_cli
 
-TEST_FOLDER_NAME = 'tests'
-BenchmarkResultsType: TypeAlias = tuple[str, dict[str, int | float | list | dict]]
-#%%=====================================================================
-# TEST CASES
+PATH_TESTS = _upsearch('tests')
+if PATH_TESTS is None:
+    raise FileNotFoundError('Test folder not found')
 
+PATH_TESTS = cast(pathlib.Path, PATH_TESTS) # type: ignore[redundant-cast]
+
+YAMLSafe = int | float | list['YAMLSafe'] | dict[str, 'YAMLSafe']
+BenchmarkResultsType: TypeAlias = tuple[str, YAMLSafe]
 #%%=====================================================================
 def _get_path_config(patterns: Sequence[str], path_start: pathlib.Path
                      ) -> pathlib.Path:
@@ -29,14 +34,14 @@ def _get_path_config(patterns: Sequence[str], path_start: pathlib.Path
             if (path_local := _upsearch(patterns, path_start)) is None
             else path_local)
 # ======================================================================
-def _parse_options(args: list[str], defaults: dict[str, Any]) -> list[str]:
+def _parse_options(args: Sequence[str], defaults: dict[str, Any]) -> list[str]:
     positional, keyword = _argumentparser(args)
 
     positional.extend((f'--{key}{"=" if value else ""}{value}'
                        for key, value in (defaults | keyword).items()))
     return positional
 # ======================================================================
-def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
+def unittests(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
     """Starts pytest unit tests."""
     import pytest
 
@@ -48,21 +53,21 @@ def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
                                      {'cov-report': 'html:tests/unittests/htmlcov'})
             break
     else:
-        options = args
+        options = list(args)
 
     pytest.main([str(path_unittests)] + options)
     return 0
 # ======================================================================
-def typing(path_tests: pathlib.Path, args: list[str]) -> int:
+def typing(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
     """Starts mypy typing tests."""
     options = {'config-file': _get_path_config(('mypy.ini',), path_tests)}
 
-    from mypy.main import main as mypy # pylint: disable=no-name-in-module
+    from mypy.main import main as mypy
 
     mypy(args = [str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
 # ======================================================================
-def linting(path_tests: pathlib.Path, args: list[str]) -> int:
+def linting(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
     """Starts pylin linter."""
     from pylint import lint
     options = {'rcfile': str(_get_path_config(('.pylintrc',), path_tests)),
@@ -99,12 +104,13 @@ def _run_profiling(function: Callable[[], Any],
                         ' See http://www.graphviz.org/download/') from exc
     path_dot.unlink()
 # ----------------------------------------------------------------------
-def profiling(path_tests: pathlib.Path, args: list[str]) -> int: # pylint: disable=too-many-locals
+def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylint: disable=too-many-locals
     """Runs profiling and converts results into a PDF."""
-    import cProfile # pylint: disable=import-outside-toplevel
-    import gprof2dot # pylint: disable=import-outside-toplevel
-    import subprocess # pylint: disable=import-outside-toplevel
+    import cProfile
+    import gprof2dot
+    import subprocess
     # parsing arguments
+    args = list(args)
     path_profiling = (pathlib.Path(args[0])
                       if args and not args[0].startswith('--')
                       else path_tests / 'profiling.py')
@@ -164,7 +170,7 @@ def profiling(path_tests: pathlib.Path, args: list[str]) -> int: # pylint: disab
                        subprocess)
     return 0
 #==============================================================================
-def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
+def benchmarking(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
     """Runs performance tests and save results into YAML file."""
 
     path_benchmarks = (pathlib.Path(args[0]) if args
@@ -199,21 +205,9 @@ TESTS: dict[str, Callable] = {function.__name__: function
                                profiling,
                                benchmarking)}
 # ----------------------------------------------------------------------
-def main(args: list[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
-    """Command line interface entry point."""
-
-    path_tests = _upsearch(TEST_FOLDER_NAME)
-
-    if not args:
-        return 0
-
-    name = args.pop(0)
-
-    if (function := TESTS.get(name)) is None:
-        if path_tests is None:
-            raise FileNotFoundError('Test folder not found')
-        return _import_from_path(path_tests / f'{name}.py').main(args)
-    return function(path_tests, args)
+def main(args: Sequence[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
+    """Main command line entry point."""
+    return function_cli(args, module = __name__)
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
     raise SystemExit(main())

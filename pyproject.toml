@@ -61,4 +61,6 @@ file = "dependencies/requirements_readme.txt"
 file = "dependencies/requirements_test.txt"
 
 [tool.setuptools.packages.find]
-where = ["src"]
+where = [
+    "src",
+]

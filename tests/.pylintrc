@@ -321,7 +321,7 @@ min-public-methods=0
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when caught.
-overgeneral-exceptions=builtins.BaseException,builtins.Exception
+overgeneral-exceptions=builtins.BaseException
 
 
 [FORMAT]
@@ -358,7 +358,14 @@ single-line-if-stmt=no
 
 # List of modules that can be imported at any level, not just the top level
 # one.
-allow-any-import-level=pytest,mypy.main.main,pylint.lint,inspect.signature
+allow-any-import-level=cProfile,
+                       gprof2dot,
+                       inspect.signature,
+                       mypy.main.main,
+                       pylint.lint,
+                       pytest,
+                       shutil,
+                       subprocess,
 
 # Allow explicit reexports by alias from a package __init__.
 allow-reexport-from-package=no
@@ -429,9 +436,11 @@ disable=raw-checker-failed,
         locally-disabled,
         file-ignored,
         suppressed-message,
-        subprocess-run-check,
         deprecated-pragma,
-        use-symbolic-message-instead
+        use-symbolic-message-instead,
+        subprocess-run-check,
+        no-name-in-module,
+        unsupported-binary-operation
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
