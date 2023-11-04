@@ -82,11 +82,12 @@ def _run_profiling(function: Callable[[], Any],
                    path_dot: pathlib.Path,
                    path_pdf: pathlib.Path,
                    is_warmup: bool,
-                   cProfile: ModuleType,
-                   gprof2dot: ModuleType,
-                   gprof2dot_args: list[str],
-                   subprocess) -> None:
-
+                   ignore_missing_dot: bool,
+                   gprof2dot_args: list[str]
+                   ) -> None:
+    import cProfile
+    import gprof2dot
+    import subprocess
     if is_warmup: # Prep to eliminate first run overhead
         function()
 
@@ -99,16 +100,17 @@ def _run_profiling(function: Callable[[], Any],
     try:
         subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
     except FileNotFoundError as exc:
+        if ignore_missing_dot:
+            return None
         raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
                         ' program is not installed.'
                         ' See http://www.graphviz.org/download/') from exc
-    path_dot.unlink()
+    finally:
+        path_dot.unlink()
 # ----------------------------------------------------------------------
 def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylint: disable=too-many-locals
     """Runs profiling and converts results into a PDF."""
-    import cProfile
-    import gprof2dot
-    import subprocess
+
     # parsing arguments
     args = list(args)
     path_profiling = (pathlib.Path(args[0])
@@ -127,6 +129,9 @@ def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylin
         elif arg.startswith('--function='):
             args.pop(index)
             function_name = arg[11:]
+        elif arg == '--ignore-missing-dot':
+            args.pop(index)
+            ignore_missing_dot = True
 
     path_profiles_folder = path_profiling.parent / 'profiles'
     functions = {name: attr for name, attr
@@ -151,10 +156,8 @@ def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylin
                        path_dot,
                        path_profiles_folder / f'{function_name}.pdf',
                        is_warmup,
-                       cProfile,
-                       gprof2dot,
-                       gprof2dot_args,
-                       subprocess)
+                       ignore_missing_dot,
+                       gprof2dot_args)
         return 0
 
     for name, function in functions.items():
@@ -164,10 +167,8 @@ def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylin
                        path_dot,
                        path_profiles_folder / f'{name}.pdf',
                        is_warmup,
-                       cProfile,
-                       gprof2dot,
-                       gprof2dot_args,
-                       subprocess)
+                       ignore_missing_dot,
+                       gprof2dot_args)
     return 0
 #==============================================================================
 def benchmarking(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:

@@ -28,7 +28,7 @@ class Test_test:
         runcheck(['test', f'unittests'], env = environment)
     # ------------------------------------------------------------------
     def test_profile(self):
-        runcheck(['test', 'profiling'])
+        runcheck(['test', 'profiling', '--no-warmup', '--ignore-missing-dot'])
     # ------------------------------------------------------------------
     def test_typing(self):
         runcheck(['test', 'typing'], check = False)
