@@ -1,3 +1,4 @@
+"""Command line interface tools."""
 import sys
 from types import ModuleType
 

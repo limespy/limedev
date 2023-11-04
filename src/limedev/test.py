@@ -3,8 +3,11 @@
 # IMPORT
 import pathlib
 import sys
+from collections.abc import Callable
+from collections.abc import Sequence
+from types import ModuleType
 from typing import Any
-from typing import Callable
+from typing import TypeAlias
 
 import yaml
 
@@ -14,27 +17,28 @@ from ._aux import _upsearch
 from ._aux import PATH_CONFIGS
 
 TEST_FOLDER_NAME = 'tests'
-BenchmarkResultsType = tuple[str, dict[str, int | float | list | dict]]
+BenchmarkResultsType: TypeAlias = tuple[str, dict[str, int | float | list | dict]]
 #%%=====================================================================
 # TEST CASES
 
 #%%=====================================================================
-def _get_path_config(patterns, path_start):
+def _get_path_config(patterns: Sequence[str], path_start: pathlib.Path
+                     ) -> pathlib.Path:
     """Loads test configuration file paths or supplies default if not found."""
     return (PATH_CONFIGS / patterns[0]
             if (path_local := _upsearch(patterns, path_start)) is None
             else path_local)
 # ======================================================================
-def _parse_options(args: list[str], keyword: dict[str, Any]) -> list[str]:
+def _parse_options(args: list[str], defaults: dict[str, Any]) -> list[str]:
     positional, keyword = _argumentparser(args)
 
     positional.extend((f'--{key}{"=" if value else ""}{value}'
-                       for key, value in keyword.items()))
+                       for key, value in (defaults | keyword).items()))
     return positional
 # ======================================================================
 def unittests(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pytest unit tests."""
-    import pytest # pylint: disable=import-outside-toplevel
+    import pytest
 
     path_unittests = path_tests / 'unittests'
 
@@ -53,14 +57,14 @@ def typing(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts mypy typing tests."""
     options = {'config-file': _get_path_config(('mypy.ini',), path_tests)}
 
-    from mypy.main import main as mypy # pylint: disable=import-outside-toplevel disable=no-name-in-module
+    from mypy.main import main as mypy # pylint: disable=no-name-in-module
 
     mypy(args = [str(path_tests.parent / 'src')] + _parse_options(args, options))
     return 0
 # ======================================================================
 def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     """Starts pylin linter."""
-    from pylint import lint # pylint: disable=import-outside-toplevel
+    from pylint import lint
     options = {'rcfile': str(_get_path_config(('.pylintrc',), path_tests)),
                'output-format': 'colorized',
                'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
@@ -69,21 +73,21 @@ def linting(path_tests: pathlib.Path, args: list[str]) -> int:
     return 0
 # ======================================================================
 def _run_profiling(function: Callable[[], Any],
-                   path_pstats,
-                   path_dot,
-                   path_pdf,
+                   path_pstats: pathlib.Path,
+                   path_dot: pathlib.Path,
+                   path_pdf: pathlib.Path,
                    is_warmup: bool,
-                   cProfile,
-                   gprof2dot,
+                   cProfile: ModuleType,
+                   gprof2dot: ModuleType,
                    gprof2dot_args: list[str],
                    subprocess) -> None:
 
     if is_warmup: # Prep to eliminate first run overhead
         function()
 
-    with cProfile.Profile() as pr:
+    with cProfile.Profile() as profiler:
         function()
-    pr.dump_stats(path_pstats)
+    profiler.dump_stats(path_pstats)
 
     gprof2dot.main(gprof2dot_args)
     path_pstats.unlink()
@@ -175,15 +179,16 @@ def benchmarking(path_tests: pathlib.Path, args: list[str]) -> int:
     if not path_performance_data.exists():
         path_performance_data.touch()
 
-    with open(path_performance_data, encoding = 'utf8', mode = 'r+') as f:
+    with open(path_performance_data, encoding = 'utf8', mode = 'r+') as file:
 
-        if (data := yaml.safe_load(f)) is None:
+        if (data := yaml.safe_load(file)) is None:
             data = {}
 
-        f.seek(0)
+        file.seek(0)
         data[version] = results
-        yaml.safe_dump(data, f, sort_keys = False, default_flow_style = False)
-        f.truncate()
+        yaml.safe_dump(data, file,
+                       sort_keys = False, default_flow_style = False)
+        file.truncate()
     return 0
 # ======================================================================
 TESTS: dict[str, Callable] = {function.__name__: function

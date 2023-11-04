@@ -12,7 +12,7 @@ def runcheck(*args, **kwargs) -> bool:
 
 @SELF_TEST_SKIP
 def test_package():
-    return runcheck(['package', '--no-build'])
+    assert runcheck(['package', '--no-build'])
 
 @SELF_TEST_SKIP
 def test_readme():
@@ -34,8 +34,8 @@ class Test_test:
         assert runcheck(['test', 'typing'])
     # ------------------------------------------------------------------
     def test_performance(self):
-        assert runcheck(['test', 'performance'])
+        assert runcheck(['test', 'benchmarking'])
     # ------------------------------------------------------------------
     def test_lint(self):
-        assert runcheck(['test', 'lint'])
+        assert runcheck(['test', 'linting'])
     # ------------------------------------------------------------------
