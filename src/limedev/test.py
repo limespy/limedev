@@ -5,7 +5,6 @@ import pathlib
 import sys
 from collections.abc import Callable
 from collections.abc import Sequence
-from types import ModuleType
 from typing import Any
 from typing import cast
 from typing import TypeAlias
@@ -107,8 +106,13 @@ def _run_profiling(function: Callable[[], Any],
                         ' See http://www.graphviz.org/download/') from exc
     finally:
         path_dot.unlink()
+    return None
 # ----------------------------------------------------------------------
-def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylint: disable=too-many-locals
+def profiling(*args: str,
+              function: str = '',
+              no_warmup: str | bool | None = None,
+              ignore_missing_dot: str | None = None,
+              path_tests: pathlib.Path = PATH_TESTS) -> int: # pylint: disable=too-many-locals
     """Runs profiling and converts results into a PDF."""
 
     # parsing arguments
@@ -117,21 +121,9 @@ def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylin
                       if args and not args[0].startswith('--')
                       else path_tests / 'profiling.py')
 
-    is_warmup = True
-    function_name = ''
+    is_warmup = no_warmup in (False, None)
 
-    index = len(args)
-    for arg in reversed(args):
-        index -= 1
-        if arg == '--no-warmup':
-            args.pop(index)
-            is_warmup = False
-        elif arg.startswith('--function='):
-            args.pop(index)
-            function_name = arg[11:]
-        elif arg == '--ignore-missing-dot':
-            args.pop(index)
-            ignore_missing_dot = True
+    ignore_missing_dot = ignore_missing_dot in (True, '')
 
     path_profiles_folder = path_profiling.parent / 'profiles'
     functions = {name: attr for name, attr
@@ -149,20 +141,20 @@ def profiling(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int: # pylin
                                                           'node-thres': '1',
                                                           'output': path_dot})
 
-    if function_name:
-        print(f'Profiling {function_name}')
-        _run_profiling(functions[function_name],
+    if function:
+        print(f'Profiling {function}')
+        _run_profiling(functions[function],
                        path_pstats,
                        path_dot,
-                       path_profiles_folder / f'{function_name}.pdf',
+                       path_profiles_folder / f'{function}.pdf',
                        is_warmup,
                        ignore_missing_dot,
                        gprof2dot_args)
         return 0
 
-    for name, function in functions.items():
+    for name, _function in functions.items():
         print(f'Profiling {name}')
-        _run_profiling(function,
+        _run_profiling(_function,
                        path_pstats,
                        path_dot,
                        path_profiles_folder / f'{name}.pdf',
@@ -198,14 +190,6 @@ def benchmarking(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
         file.truncate()
     return 0
 # ======================================================================
-TESTS: dict[str, Callable] = {function.__name__: function
-                              for function in
-                              (linting,
-                               unittests,
-                               typing,
-                               profiling,
-                               benchmarking)}
-# ----------------------------------------------------------------------
 def main(args: Sequence[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     """Main command line entry point."""
     return function_cli(args, module = __name__)
