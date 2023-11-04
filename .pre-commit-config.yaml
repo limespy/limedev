@@ -22,7 +22,7 @@ repos:
     -   id: mypy
         name: Static type check
         args:
-        - --config-file=mypy.ini
+        - --config-file=tests/mypy.ini
         - --no-warn-unused-ignores
         - --explicit-package-bases
         exclude: 'mypy_experiments.py'
