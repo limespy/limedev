@@ -10,9 +10,10 @@ LimeDev is collection tools for Python development. These tools are more or less
 ## Table of Contents <!-- omit in toc -->
 
 - [Quick start guide](#quick-start-guide)
-    - [The first steps](#the-first-steps)
-        - [Installing](#installing)
-        - [Importing](#importing)
+  - [The first steps](#the-first-steps)
+    - [Installing](#installing)
+    - [Importing](#importing)
+- [0.2.2 2023-08-27](#022-2023-08-27)
 
 # Quick start guide
 
