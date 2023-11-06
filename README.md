@@ -38,6 +38,10 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.4.1 2023-11-06 <!-- omit in toc -->
+
+- Fixed configs
+
 ## 0.4.0 2023-11-06 <!-- omit in toc -->
 
 - Updated profiling structure
