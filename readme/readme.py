@@ -5,7 +5,7 @@ from limedev.readme import md
 NAME = 'LimeDev'
 #=======================================================================
 def main(project_info):
-    '''This gets called by the limedev'''
+    """This gets called by the limedev."""
 
     semi_description = md.Document([
         f'{NAME} is collection tools for Python development.\n'

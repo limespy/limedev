@@ -8,29 +8,29 @@ build-backend = "setuptools.build_meta"
 name = "limedev"
 description = "Toolkit for Python development, especially packaging "
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
     "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
 ]
 authors = [
     { name = "Limespy" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 readme = "README.md"
-version = "0.3.0"
+version = "0.4.0"
 dynamic = [
     "dependencies",
     "optional-dependencies",
 ]
 
 [project.scripts]
+limedev = "limedev:main"
 package = "limedev.package:main"
 test = "limedev.test:main"
 readme = "limedev.readme:main"
@@ -42,20 +42,25 @@ Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 
 [tool.setuptools.dynamic.dependencies]
 file = [
-    "dependencies/_main.txt",
+    "dependencies/requirements.txt",
 ]
 
 [tool.setuptools.dynamic.optional-dependencies.dev]
-file = "dependencies/dev.txt"
+file = "dependencies/requirements_dev.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.build]
-file = "dependencies/build.txt"
+file = "dependencies/requirements_build.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.package]
-file = "dependencies/package.txt"
+file = "dependencies/requirements_package.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.readme]
-file = "dependencies/readme.txt"
+file = "dependencies/requirements_readme.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test]
-file = "dependencies/test.txt"
+file = "dependencies/requirements_test.txt"
+
+[tool.setuptools.packages.find]
+where = [
+    "src",
+]

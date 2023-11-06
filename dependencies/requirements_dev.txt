@@ -10,5 +10,5 @@ tomli >= 2.0.1
 tomli-w >= 1.0.0
 tox >= 4.5.1
 types-PyYAML >= 6.0
-yamdog >= 0.5.0
 wheel >= 0.38
+yamdog >= 0.5.0

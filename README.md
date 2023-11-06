@@ -38,10 +38,17 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.4.0 2023-11-06 <!-- omit in toc -->
+
+- Updated profiling structure
+- function_cli
+- Python version range moved from 3.9 -3.11 to 3.10-3.12
+
 ## 0.3.0 2023-08-27 <!-- omit in toc -->
 
 - Change to testing interface
-# 0.2.2 2023-08-27
+
+## 0.2.2 2023-08-27 <!-- omit in toc -->
 
 - Fix to performance test deleting previous performance data
 

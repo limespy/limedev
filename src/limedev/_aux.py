@@ -1,14 +1,18 @@
-'''Helper functions and values for other modules'''
+"""Helper functions and values for other modules."""
 import pathlib
+from collections.abc import Iterable
 from importlib import util
-from typing import Iterable
-from typing import Optional
+from types import ModuleType
 from typing import Union
 
+PATH_BASE = pathlib.Path(__file__).parent
+PATH_CONFIGS = PATH_BASE / 'configs'
 
+# ======================================================================
 def _upsearch(patterns: Union[str, Iterable[str]],
               path_search = pathlib.Path.cwd(),
-              deep = False) -> Optional[pathlib.Path]:
+              deep = False) -> pathlib.Path | None:
+    """Searches for pattern gradually going up the path."""
     path_previous = pathlib.Path()
     if isinstance(patterns, str):
         patterns = (patterns,)
@@ -22,14 +26,15 @@ def _upsearch(patterns: Union[str, Iterable[str]],
         path_previous, path_search = path_search, path_search.parent
         if path_search == path_previous:
             return None
-
+# ----------------------------------------------------------------------
 if (path_base_child := _upsearch(('pyproject.toml',
                                   '.git',
                                   'setup.py'))) is None:
     raise FileNotFoundError('Base path not found')
-PATH_BASE = path_base_child.parent
-
-def _import_from_path(path_module: pathlib.Path):
+PATH_REPO = path_base_child.parent
+# ======================================================================
+def _import_from_path(path_module: pathlib.Path) -> ModuleType:
+    """Imports python module from a path."""
     spec = util.spec_from_file_location(path_module.stem, path_module)
 
     # creates a new module based on spec
@@ -39,3 +44,15 @@ def _import_from_path(path_module: pathlib.Path):
     # when a module is imported or reloaded.
     spec.loader.exec_module(module) # type: ignore
     return module
+# ======================================================================
+def _argumentparser(args_in: Iterable[str]
+                    ) -> tuple[list[str], dict[str, str]]:
+    args = []
+    kwargs = {}
+    for arg in args_in:
+        if arg.startswith('--'):
+            keyword, _, value = arg[2:].partition('=')
+            kwargs[keyword] = value
+        else:
+            args.append(arg)
+    return args, kwargs
