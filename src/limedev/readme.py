@@ -1,4 +1,4 @@
-'''For generating readme.md file'''
+"""For generating readme.md file."""
 import datetime
 import pathlib
 import re
@@ -6,32 +6,29 @@ from typing import Any
 from typing import Iterable
 from typing import Optional
 
-import yamdog as md # type: ignore
+import yamdog as md
 
 from ._aux import _import_from_path
 from ._aux import _upsearch
-from ._aux import PATH_BASE
-
+from ._aux import PATH_REPO
 #=======================================================================
-
 re_heading = re.compile(r'^#* .*$')
-
+# ----------------------------------------------------------------------
 def parse_md_element(text: str):
-    '''Verys simple parser able to parse part of markdown syntax into YAMDOG objects'''
+    """Very simple parser able to parse part of markdown syntax into YAMDOG
+    objects."""
     if match := re_heading.match(text):
         hashes, content = match[0].split(' ', 1)
         return md.Heading(content, len(hashes))
     return md.Raw(text)
 #-----------------------------------------------------------------------
 def parse_md(text: str):
-    '''Loops md parser'''
+    """Loops md parser."""
     return md.Document([parse_md_element(item.strip())
                         for item in text.split('\n\n')])
 #=======================================================================
 def make_intro(full_name, pypiname, semi_description) -> md.Document:
-    '''Builds intro from metadata'''
-
-    shields_url = 'https://img.shields.io/'
+    """Builds intro from metadata."""
 
     pypi_project_url = f'https://pypi.org/project/{pypiname}'
     pypi_badge_info = (('v', 'PyPI Package latest release'),
@@ -39,7 +36,8 @@ def make_intro(full_name, pypiname, semi_description) -> md.Document:
                        ('pyversions', 'Supported versions'),
                        ('implementation', 'Supported implementations'))
     pypi_badges = [md.Link(pypi_project_url,
-                           md.Image(f'{shields_url}pypi/{code}/{pypiname}.svg',
+                           md.Image(f'https://img.shields.io/pypi/'
+                                    f'{code}/{pypiname}.svg',
                                     desc), 'Project PyPI page')
                    for code, desc in pypi_badge_info]
     doc = md.Document([md.Paragraph(pypi_badges, '\n'),
@@ -51,7 +49,7 @@ def make_intro(full_name, pypiname, semi_description) -> md.Document:
 #=======================================================================
 def make_setup_guide(name, pypiname, package_name, abbreviation = None
                      ) -> md.Document:
-    '''Builds setup guide from metadata'''
+    """Builds setup guide from metadata."""
     doc = md.Document([
         md.Heading('Quick start guide', 1),
         "Here's how you can start ",
@@ -76,7 +74,7 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
 #=======================================================================
 def make_changelog(level: int, path_changelog: pathlib.Path, version: str
                    ) -> md.Document:
-    '''Loads changelog and reformats it for README document'''
+    """Loads changelog and reformats it for README document."""
     doc = md.Document([md.Heading('Changelog', level, in_TOC = False)])
     changelog = parse_md(path_changelog.read_text())
     if changelog:
@@ -105,9 +103,9 @@ def make(package,
          readme_body: Any = None,
          annexes: Optional[Iterable[tuple[Any, Any]]] = None,
          ) -> md.Document:
-    '''Builds a README document from given metadata and contents'''
+    """Builds a README document from given metadata and contents."""
     if name is None:
-        name = package.__name__.capitalise()
+        name = package.__name__.capitalize()
     if pypiname is None:
         pypiname = package.__name__
     doc = make_intro(name, pypiname, semi_description)
@@ -132,22 +130,22 @@ def make(package,
     return doc
 #=======================================================================
 def make_annexes(annexes: Iterable[tuple[Any, Any]]):
-    '''Formats annexes into sections'''
+    """Formats annexes into sections."""
     doc = md.Document([md.Heading('Annexes', 1)])
     for index, (heading_content, body) in enumerate(annexes, start = 1):
         doc += md.Heading(2, f'Annex {index}: {heading_content}')
         doc += body
     return doc
 #=======================================================================
-def main():
-    '''Command line interface entry point'''
+def main() -> int:
+    """Command line interface entry point."""
     try:
         import tomllib # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
-    user_readme  = _import_from_path(PATH_BASE / 'readme' / 'readme.py').main
-    PATH_README = PATH_BASE / 'README.md'
-    PATH_PYPROJECT = PATH_BASE / 'pyproject.toml'
+    user_readme  = _import_from_path(PATH_REPO / 'readme' / 'readme.py').main
+    PATH_README = PATH_REPO / 'README.md'
+    PATH_PYPROJECT = PATH_REPO / 'pyproject.toml'
 
     PATH_README.write_text(str(user_readme(tomllib.loads(PATH_PYPROJECT.read_text())['project']))
                            + '\n')
