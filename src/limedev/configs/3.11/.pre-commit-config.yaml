@@ -35,3 +35,4 @@ repos:
     hooks:
     -   id: docformatter
         name: Docstring formatting
+        exclude: '__init__.py'
