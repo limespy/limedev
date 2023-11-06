@@ -9,6 +9,7 @@ name = "limedev"
 description = "Toolkit for Python development, especially packaging "
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
     "Operating System :: Unix",
     "Operating System :: POSIX",
