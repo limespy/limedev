@@ -10,10 +10,9 @@ LimeDev is collection tools for Python development. These tools are more or less
 ## Table of Contents <!-- omit in toc -->
 
 - [Quick start guide](#quick-start-guide)
-  - [The first steps](#the-first-steps)
-    - [Installing](#installing)
-    - [Importing](#importing)
-- [0.2.2 2023-08-27](#022-2023-08-27)
+    - [The first steps](#the-first-steps)
+        - [Installing](#installing)
+        - [Importing](#importing)
 
 # Quick start guide
 
@@ -39,14 +38,17 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.4.0 2023-11-05 <!-- omit in toc -->
+## 0.4.0 2023-11-06 <!-- omit in toc -->
 
-- Changed profiler to scalene
+- Updated profiling structure
+- function_cli
+- Python version range moved from 3.9 -3.11 to 3.10-3.12
 
 ## 0.3.0 2023-08-27 <!-- omit in toc -->
 
 - Change to testing interface
-# 0.2.2 2023-08-27
+
+## 0.2.2 2023-08-27 <!-- omit in toc -->
 
 - Fix to performance test deleting previous performance data
 
