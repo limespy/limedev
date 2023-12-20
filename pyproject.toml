@@ -18,14 +18,14 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12"
+    "Programming Language :: Python :: 3.12",
 ]
 authors = [
     { name = "Limespy" },
 ]
 requires-python = ">=3.10"
 readme = "README.md"
-version = "0.4.1"
+version = "0.5.0"
 dynamic = [
     "dependencies",
     "optional-dependencies",
