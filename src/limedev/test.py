@@ -30,7 +30,7 @@ def _get_path_config(pattern: str, path_start: pathlib.Path = PATH_TESTS
 # ======================================================================
 def _pack_kwargs(kwargs: dict[str, str]) -> list[str]:
 
-    return [f'--{key}{"=" if value else ""}{value}'
+    return [f"--{key}{'=' if value else ''}{value}"
             for key, value in kwargs.items()]
 # ======================================================================
 def unittests(path_unittests: pathlib.Path = PATH_TESTS / 'unittests',
@@ -41,7 +41,7 @@ def unittests(path_unittests: pathlib.Path = PATH_TESTS / 'unittests',
     import pytest
 
     if cov and 'cov-report' not in kwargs:
-        kwargs['cov-report'] = f'html:{path_unittests/"htmlcov"}'
+        kwargs['cov-report'] = f"html:{path_unittests/'htmlcov'}"
 
     pytest.main([str(path_unittests)] + _pack_kwargs(kwargs))
     return 0

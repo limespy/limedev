@@ -59,7 +59,7 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
         md.CodeBlock(f'pip install {pypiname}'),
         md.Heading('Importing', 3),
         md.Paragraph([(f'Import name is '
-                       f'{"" if pypiname == package_name else "not "}'
+                       f"{'' if pypiname == package_name else 'not '}"
                        f'the same as install name, '),
                        md.Code(pypiname),
                        '.']),
