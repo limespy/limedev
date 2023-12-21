@@ -2,78 +2,80 @@
 #%%=====================================================================
 # IMPORT
 import pathlib
-import sys
 from collections.abc import Callable
-from collections.abc import Sequence
 from typing import Any
 from typing import cast
 from typing import TypeAlias
 
 import yaml
 
-from ._aux import _argumentparser
-from ._aux import _import_from_path
-from ._aux import _upsearch
+from ._aux import import_from_path
 from ._aux import PATH_CONFIGS
-from .CLI import function_cli
-
-PATH_TESTS = _upsearch('tests')
-if PATH_TESTS is None:
-    raise FileNotFoundError('Test folder not found')
-
-PATH_TESTS = cast(pathlib.Path, PATH_TESTS) # type: ignore[redundant-cast]
+from ._aux import upsearch
+from .CLI import get_main
+#%%=====================================================================
+if (_PATH_TESTS := upsearch('tests')) is None:
+    PATH_TESTS = pathlib.Path.cwd()
+else:
+    PATH_TESTS = _PATH_TESTS
 
 YAMLSafe = int | float | list['YAMLSafe'] | dict[str, 'YAMLSafe']
 BenchmarkResultsType: TypeAlias = tuple[str, YAMLSafe]
 #%%=====================================================================
-def _get_path_config(patterns: Sequence[str], path_start: pathlib.Path
+def _get_path_config(pattern: str, path_start: pathlib.Path = PATH_TESTS
                      ) -> pathlib.Path:
     """Loads test configuration file paths or supplies default if not found."""
-    return (PATH_CONFIGS / patterns[0]
-            if (path_local := _upsearch(patterns, path_start)) is None
+    return (PATH_CONFIGS / pattern
+            if (path_local := upsearch(pattern, path_start)) is None
             else path_local)
 # ======================================================================
-def _parse_options(args: Sequence[str], defaults: dict[str, Any]) -> list[str]:
-    positional, keyword = _argumentparser(args)
+def _pack_kwargs(kwargs: dict[str, str]) -> list[str]:
 
-    positional.extend((f'--{key}{"=" if value else ""}{value}'
-                       for key, value in (defaults | keyword).items()))
-    return positional
+    return [f'--{key}{"=" if value else ""}{value}'
+            for key, value in kwargs.items()]
 # ======================================================================
-def unittests(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
+def unittests(*args: str,
+              path_unittests: pathlib.Path = PATH_TESTS / 'unittests',
+              cov: bool = False,
+              **kwargs: str
+              ) -> int:
     """Starts pytest unit tests."""
     import pytest
 
-    path_unittests = path_tests / 'unittests'
+    if cov and 'cov-report' not in kwargs:
+        kwargs['cov-report'] = f'html:{path_unittests/"htmlcov"}'
 
-    for arg in args:
-        if arg.startswith('--cov'):
-            options = _parse_options(args,
-                                     {'cov-report': 'html:tests/unittests/htmlcov'})
-            break
-    else:
-        options = list(args)
-
-    pytest.main([str(path_unittests)] + options)
+    pytest.main([str(path_unittests)] + list(args) + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
-def typing(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
-    """Starts mypy typing tests."""
-    options = {'config-file': _get_path_config(('mypy.ini',), path_tests)}
+def typing(path_src: pathlib.Path = PATH_TESTS.parent / 'src',
+           *args: str,
+           config_file: str = str(_get_path_config('mypy.ini')),
+           **kwargs: str
+           ) -> int:
+    """Starts mypy static type tests."""
+    if 'config-file' not in kwargs:
+        kwargs['config-file'] = config_file
 
     from mypy.main import main as mypy
 
-    mypy(args = [str(path_tests.parent / 'src')] + _parse_options(args, options))
+    mypy(args = [str(path_src)] + list(args) + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
-def linting(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
+def linting(path_source: pathlib.Path  = PATH_TESTS.parent / 'src',
+            *args: str,
+            path_config: str = str(_get_path_config('.pylintrc')),
+            **kwargs: str
+            ) -> int:
     """Starts pylin linter."""
     from pylint import lint
-    options = {'rcfile': str(_get_path_config(('.pylintrc',), path_tests)),
-               'output-format': 'colorized',
-               'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
-                                  '    {msg}"'}
-    lint.Run([str(path_tests.parent / 'src')] + _parse_options(args, options))
+
+    kwargs = {'rcfile': path_config,
+              'output-format': 'colorized',
+              'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
+                              '    {msg}"'} | kwargs
+
+    lint.Run([str(path_source)] + list(args) + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
 def _run_profiling(function: Callable[[], Any],
@@ -108,18 +110,15 @@ def _run_profiling(function: Callable[[], Any],
         path_dot.unlink()
     return None
 # ----------------------------------------------------------------------
-def profiling(*args: str,
+def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
+              *args: str,
               function: str = '',
               no_warmup: str | bool | None = None,
               ignore_missing_dot: str | None = None,
-              path_tests: pathlib.Path = PATH_TESTS) -> int: # pylint: disable=too-many-locals
+              **kwargs: str) -> int: # pylint: disable=too-many-locals
     """Runs profiling and converts results into a PDF."""
 
     # parsing arguments
-    args = list(args)
-    path_profiling = (pathlib.Path(args[0])
-                      if args and not args[0].startswith('--')
-                      else path_tests / 'profiling.py')
 
     is_warmup = no_warmup in (False, None)
 
@@ -127,7 +126,7 @@ def profiling(*args: str,
 
     path_profiles_folder = path_profiling.parent / 'profiles'
     functions = {name: attr for name, attr
-                 in _import_from_path(path_profiling).__dict__.items()
+                 in import_from_path(path_profiling).__dict__.items()
                  if not name.startswith('_') and callable(attr)}
 
     if not path_profiles_folder.exists():
@@ -135,11 +134,10 @@ def profiling(*args: str,
 
     path_pstats = path_profiles_folder / '.pstats'
     path_dot = path_profiles_folder / '.dot'
-
-    gprof2dot_args = [str(path_pstats)] + _parse_options(args,
-                                                         {'format': 'pstats',
-                                                          'node-thres': '1',
-                                                          'output': path_dot})
+    kwargs = {'format': 'pstats',
+               'node-thres': '1',
+               'output': str(path_dot)} | kwargs
+    gprof2dot_args = [str(path_pstats)] + list(args) + _pack_kwargs(kwargs)
 
     if function:
         print(f'Profiling {function}')
@@ -162,16 +160,12 @@ def profiling(*args: str,
                        ignore_missing_dot,
                        gprof2dot_args)
     return 0
-#==============================================================================
-def benchmarking(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
+# ======================================================================
+def benchmarking(path_benchmarks: pathlib.Path = PATH_TESTS / 'benchmarking.py',
+                 *args: str) -> int:
     """Runs performance tests and save results into YAML file."""
 
-    path_benchmarks = (pathlib.Path(args[0]) if args
-                       else path_tests / 'benchmarking.py')
-
-    benchmark = _import_from_path(path_benchmarks).main
-
-    version, results = benchmark()
+    version, results = import_from_path(path_benchmarks).main()
 
     path_performance_data = path_benchmarks.with_suffix('.yaml')
 
@@ -190,9 +184,7 @@ def benchmarking(*args: str, path_tests: pathlib.Path = PATH_TESTS) -> int:
         file.truncate()
     return 0
 # ======================================================================
-def main(args: Sequence[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
-    """Main command line entry point."""
-    return function_cli(args, module = __name__)
+main = get_main(__name__)
 # ----------------------------------------------------------------------
 if __name__ == '__main__':
     raise SystemExit(main())

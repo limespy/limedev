@@ -3,13 +3,12 @@ import pathlib
 from collections.abc import Iterable
 from importlib import util
 from types import ModuleType
-from typing import Union
 
 PATH_BASE = pathlib.Path(__file__).parent
 PATH_CONFIGS = PATH_BASE / 'configs'
 
 # ======================================================================
-def _upsearch(patterns: Union[str, Iterable[str]],
+def upsearch(patterns: str | Iterable[str],
               path_search = pathlib.Path.cwd(),
               deep = False) -> pathlib.Path | None:
     """Searches for pattern gradually going up the path."""
@@ -27,13 +26,13 @@ def _upsearch(patterns: Union[str, Iterable[str]],
         if path_search == path_previous:
             return None
 # ----------------------------------------------------------------------
-if (path_base_child := _upsearch(('pyproject.toml',
+if (path_base_child := upsearch(('pyproject.toml',
                                   '.git',
                                   'setup.py'))) is None:
     raise FileNotFoundError('Base path not found')
 PATH_REPO = path_base_child.parent
 # ======================================================================
-def _import_from_path(path_module: pathlib.Path) -> ModuleType:
+def import_from_path(path_module: pathlib.Path) -> ModuleType:
     """Imports python module from a path."""
     spec = util.spec_from_file_location(path_module.stem, path_module)
 
@@ -44,15 +43,3 @@ def _import_from_path(path_module: pathlib.Path) -> ModuleType:
     # when a module is imported or reloaded.
     spec.loader.exec_module(module) # type: ignore
     return module
-# ======================================================================
-def _argumentparser(args_in: Iterable[str]
-                    ) -> tuple[list[str], dict[str, str]]:
-    args = []
-    kwargs = {}
-    for arg in args_in:
-        if arg.startswith('--'):
-            keyword, _, value = arg[2:].partition('=')
-            kwargs[keyword] = value
-        else:
-            args.append(arg)
-    return args, kwargs

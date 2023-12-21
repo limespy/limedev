@@ -1,14 +1,13 @@
 import enum
-import importlib
-import pathlib
+import inspect
 import sys
 from collections.abc import Callable
 from collections.abc import Collection
 from collections.abc import Generator
 from collections.abc import Iterable
 from functools import partial
-from inspect import _empty
-from inspect import signature
+from itertools import chain
+from itertools import repeat
 from types import EllipsisType
 from types import FunctionType
 from types import GenericAlias
@@ -16,10 +15,13 @@ from types import ModuleType
 from types import UnionType
 from typing import Any
 from typing import cast
-from typing import NamedTuple
 from typing import Protocol
 from typing import Self
+from typing import Sequence
+from typing import TypeAlias
 from typing import TypeGuard
+# ======================================================================
+Parameter = inspect.Parameter
 # ======================================================================
 def _quotestrip(arg: str) -> str:
     """Removes quotes from the beginning and the end of the argument if they
@@ -28,7 +30,7 @@ def _quotestrip(arg: str) -> str:
                           and (arg[0], arg[-1]) in (("'", "'"), ('"', '"')))
             else arg)
 # ----------------------------------------------------------------------
-def _argumentsplit(args_in: list[str]) -> tuple[list[str], dict[str, str]]:
+def _argumentsplit(args_in: Sequence[str]) -> tuple[list[str], dict[str, str]]:
     """Separates arguments into positional and keyword arguments."""
     args = []
     kwargs = {}
@@ -49,6 +51,8 @@ class TypeConversionError(ValueError):
     ...
 # ----------------------------------------------------------------------
 class NamedTupleLike(Protocol):
+    __annotations__: dict[str, ArgType]
+
     @classmethod
     def _make(cls, items: Iterable) -> Self:
         ...
@@ -100,14 +104,20 @@ def _collection(args: list[str], argtype: ArgType,
     return collectionlike(_convert_type(arg, argtype) for arg in args)
 # ----------------------------------------------------------------------
 def _is_parenthesis(arg:  str) -> bool | None:
-    """Checks if the argument has parenthesis are around correctly."""
-    if (is_paren := (arg[0] == '(')) ^ (arg[0] == '('):
+    """Checks if the argument has parenthesis and they are around correctly.
+
+    True -> Parenthesise are and they are correct False -> No
+    parenthesis None -> Incorrect parenthesis
+    """
+    if not arg:
+        return False
+    if (is_paren := (arg[0] == '(')) ^ (arg[-1] == ')'):
         return None
     return is_paren
 # ----------------------------------------------------------------------
 def _convert_pair(arg: str, keytype: ArgType, valuetype: ArgType
                   ) -> tuple[object, object] | tuple[None, list[str]]:
-    """Handles sing key: value -pair"""
+    """Handles single key: value -pair"""
     errormessages = []
     keyarg = ''
     while (partitioning := arg.partition(':'))[1]:
@@ -135,7 +145,7 @@ def _convert_pair(arg: str, keytype: ArgType, valuetype: ArgType
 def _dict(arg: str, keytype: ArgType, valuetype: ArgType, dictlike: type
           ) -> dict[Any, Any]:
     """Handles a dictionary."""
-    if arg[0] != '(' and arg[-1] != ')':
+    if not _is_parenthesis(arg):
         raise TypeConversionError(f"argument '{arg}' must start with"
                                   "'(' and end with ')'")
     pairs = []
@@ -212,7 +222,7 @@ def _bool(arg: str) -> bool:
 def _convert_type(arg: str, argtype: ArgType) -> Any:
     """Converts argument to annotated type."""
     try:
-        if argtype is _empty or argtype is Any:
+        if argtype in (Parameter.empty, Any):
             return arg
         if isinstance(argtype, GenericAlias):
             return _generic_alias(arg, argtype)
@@ -221,8 +231,6 @@ def _convert_type(arg: str, argtype: ArgType) -> Any:
             return _union(arg, argtype)
         if isinstance(argtype, enum.EnumType):
             return _enum(arg, argtype)
-        if issubclass(argtype, str):
-            return arg
         if argtype is bool:
             return _bool(arg)
         if issubclass(argtype, dict):
@@ -255,7 +263,7 @@ def _make_helpstring(module: ModuleType) -> str:
     helptext = 'Functions available:'
 
     for name, function in cli_hooks(module):
-        _signature = signature(function)
+        _signature = inspect.signature(function)
         helptext += f'\n\n{name}'
 
         # Adding parameters
@@ -269,6 +277,53 @@ def _make_helpstring(module: ModuleType) -> str:
             helptext += f"\n    '''{function.__doc__}'''"
 
     return helptext
+# ----------------------------------------------------------------------
+ArgsKwargs: TypeAlias = tuple[list, dict[str, Any]]
+# ----------------------------------------------------------------------
+def _convert_parameter(arg: str, parameter: Parameter):
+    """Convertest argument according to parameter."""
+    try:
+        return _convert_type(arg, parameter.annotation)
+    except TypeConversionError as exc:
+        raise TypeConversionError(f"Converting input for '{parameter.name}'"
+                                    f' failed.\n{exc}')
+# ----------------------------------------------------------------------
+def _convert_args(args: Sequence[str], function: FunctionType
+                  ) -> ArgsKwargs:
+    """Parses command line arguments and convertes them according to the
+    function signature."""
+    cli_args, cli_kwargs = _argumentsplit(args)
+
+    function_signature = inspect.signature(function)
+
+    var_pos_not_found = True
+    parameter_var_pos = Parameter('args', Parameter.VAR_POSITIONAL)
+    parameter_var_kw = Parameter('kwargs', Parameter.VAR_KEYWORD)
+
+    parameters = {}
+
+    for parameter in function_signature.parameters.values():
+        if (var_pos_not_found
+            and parameter.kind == Parameter.VAR_POSITIONAL):
+            parameter_var_pos = parameter
+            var_pos_not_found = False
+        elif parameter.kind == Parameter.VAR_KEYWORD:
+            parameter_var_kw = parameter
+        else:
+            parameters[parameter.name] = parameter
+
+    converted_kwargs = {}
+
+    for parameter_name, cli_arg in cli_kwargs.items():
+        parameter = parameters.pop(parameter_name, parameter_var_kw)
+        converted_kwargs[parameter_name] = _convert_parameter(cli_arg,
+                                                              parameter)
+    converted_args = [_convert_parameter(cli_arg, parameter)
+                      for cli_arg, parameter
+                      in zip(cli_args, chain(parameters.values(),
+                                             repeat(parameter_var_pos)))]
+
+    return converted_args, converted_kwargs
 # ----------------------------------------------------------------------
 def function_cli(args: list[str] = sys.argv[1:],
                  module: str | ModuleType = '__main__') -> int:
@@ -303,34 +358,13 @@ def function_cli(args: list[str] = sys.argv[1:],
         return 2
 
     # Parsing the arguments
-    cli_args, cli_kwargs = _argumentsplit(args[1:])
+    converted_args, converted_kwargs = _convert_args(args[1:], function)
 
-    function_signature = signature(function)
-    parameters = dict(function_signature.parameters)
-    converted_kwargs = {}
-
-    for parameter_name, cli_arg in cli_kwargs.items():
-        parameter = parameters.pop(parameter_name)
-        argtype = parameter.annotation
-        try:
-            converted_kwargs[parameter_name] = _convert_type(cli_arg, argtype)
-        except TypeConversionError as exc:
-            print(f"Converting input for '{parameter.name}' failed.\n{exc}",
-                  file = sys.stderr)
-            return 2
-
-    converted_args = []
-    for parameter, cli_arg in zip(parameters.values(), cli_args):
-        argtype = parameter.annotation
-        try:
-            converted_args.append(_convert_type(cli_arg, argtype))
-        except TypeConversionError as exc:
-            print(f"Converting input for '{parameter.name}' failed.\n{exc}",
-                  file = sys.stderr)
-            return 2
     output = function(*converted_args, **converted_kwargs)
+
     if isinstance(output, int):
         return output
+
     if output is not None:
         print(output)
     return 0
