@@ -1,3 +1,4 @@
+"""Command line interface framework."""
 import enum
 import inspect
 import sys
@@ -43,14 +44,16 @@ def _argumentsplit(args_in: Sequence[str]) -> tuple[list[str], dict[str, str]]:
     return args, kwargs
 # ----------------------------------------------------------------------
 class FromStrType(type):
-    def __call__(self, _: str) -> Any:
+    """Type instantiable from str."""
+    def __call__(cls, _: str) -> Any:
         ...
 ArgType = GenericAlias | UnionType | type | FromStrType
 # ----------------------------------------------------------------------
 class TypeConversionError(ValueError):
-    ...
+    """Merker for error in converting str to specified type."""
 # ----------------------------------------------------------------------
 class NamedTupleLike(Protocol):
+    """NamedTuple Protocol."""
     __annotations__: dict[str, ArgType]
 
     @classmethod
@@ -111,7 +114,7 @@ def _is_parenthesis(arg:  str) -> bool | None:
     """
     if not arg:
         return False
-    if (is_paren := (arg[0] == '(')) ^ (arg[-1] == ')'):
+    if (is_paren := arg[0] == '(') ^ (arg[-1] == ')'):
         return None
     return is_paren
 # ----------------------------------------------------------------------
@@ -240,11 +243,11 @@ def _convert_type(arg: str, argtype: ArgType) -> Any:
         if issubclass(argtype, Collection):
             return _collection(arg.split(','), str, argtype)
     except TypeConversionError as exc:
-        raise TypeConversionError(_format_error(arg, argtype, exc))
+        raise TypeConversionError(_format_error(arg, argtype, exc))  # pylint: disable=raise-missing-from
     try: # Direct conversion
         return cast(FromStrType, argtype)(arg)
     except (TypeError, ValueError) as exc:
-        raise TypeConversionError(_format_error(arg, argtype, exc))
+        raise TypeConversionError(_format_error(arg, argtype, exc))  # pylint: disable=raise-missing-from
 # ----------------------------------------------------------------------
 def cli_hooks(module: ModuleType
                ) -> Generator[tuple[str, FunctionType], None, None]:
@@ -285,8 +288,8 @@ def _convert_parameter(arg: str, parameter: Parameter):
     try:
         return _convert_type(arg, parameter.annotation)
     except TypeConversionError as exc:
-        raise TypeConversionError(f"Converting input for '{parameter.name}'"
-                                    f' failed.\n{exc}')
+        raise TypeConversionError(f"Converting input for '{parameter.name}'"# pylint: disable=raise-missing-from
+                                  f' failed.\n{exc}')
 # ----------------------------------------------------------------------
 def _convert_args(args: Sequence[str], function: FunctionType
                   ) -> ArgsKwargs:
@@ -370,4 +373,5 @@ def function_cli(args: list[str] = sys.argv[1:],
     return 0
 # ======================================================================
 def get_main(module: str | ModuleType = '__main__'):
+    """Generating main function from module or module name."""
     return partial(function_cli, module = module)

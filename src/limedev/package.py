@@ -11,9 +11,9 @@ import time
 import tomli_w
 from build import __main__ as build
 
-from ._aux import _import_from_path
-from ._aux import _upsearch
+from ._aux import import_from_path
 from ._aux import PATH_REPO
+from ._aux import upsearch
 
 try:
     import tomllib
@@ -25,7 +25,7 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
 
     Builds README and the package
     """
-    if (path_pyproject := _upsearch('pyproject.toml')) is None:
+    if (path_pyproject := upsearch('pyproject.toml')) is None:
         raise FileNotFoundError('pyproject.toml not found')
 
     path_readme = PATH_REPO / 'README.md'
@@ -51,7 +51,7 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
         source_main_url = source_url + '/blob/main/'
     # ------------------------------------------------------------------
     # Long Description
-    user_readme  = _import_from_path(PATH_REPO / 'readme' / 'readme.py').main
+    user_readme  = import_from_path(PATH_REPO / 'readme' / 'readme.py').main
     readme_text = str(user_readme(project_info)) + '\n'
     readme_text_pypi = readme_text.replace('./', source_main_url)
     # ------------------------------------------------------------------

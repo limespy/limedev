@@ -38,7 +38,7 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.5.0 2023-12-20 <!-- omit in toc -->
+## 0.5.0 2023-12-21 <!-- omit in toc -->
 
 - Updated CLI framework
 

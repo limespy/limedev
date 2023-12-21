@@ -4,7 +4,6 @@
 import pathlib
 from collections.abc import Callable
 from typing import Any
-from typing import cast
 from typing import TypeAlias
 
 import yaml
@@ -34,8 +33,7 @@ def _pack_kwargs(kwargs: dict[str, str]) -> list[str]:
     return [f'--{key}{"=" if value else ""}{value}'
             for key, value in kwargs.items()]
 # ======================================================================
-def unittests(*args: str,
-              path_unittests: pathlib.Path = PATH_TESTS / 'unittests',
+def unittests(path_unittests: pathlib.Path = PATH_TESTS / 'unittests',
               cov: bool = False,
               **kwargs: str
               ) -> int:
@@ -45,11 +43,10 @@ def unittests(*args: str,
     if cov and 'cov-report' not in kwargs:
         kwargs['cov-report'] = f'html:{path_unittests/"htmlcov"}'
 
-    pytest.main([str(path_unittests)] + list(args) + _pack_kwargs(kwargs))
+    pytest.main([str(path_unittests)] + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
 def typing(path_src: pathlib.Path = PATH_TESTS.parent / 'src',
-           *args: str,
            config_file: str = str(_get_path_config('mypy.ini')),
            **kwargs: str
            ) -> int:
@@ -59,11 +56,10 @@ def typing(path_src: pathlib.Path = PATH_TESTS.parent / 'src',
 
     from mypy.main import main as mypy
 
-    mypy(args = [str(path_src)] + list(args) + _pack_kwargs(kwargs))
+    mypy(args = [str(path_src)] + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
 def linting(path_source: pathlib.Path  = PATH_TESTS.parent / 'src',
-            *args: str,
             path_config: str = str(_get_path_config('.pylintrc')),
             **kwargs: str
             ) -> int:
@@ -75,7 +71,7 @@ def linting(path_source: pathlib.Path  = PATH_TESTS.parent / 'src',
               'msg-template': '"{path}:{line}:{column}:{msg_id}:{symbol}\n'
                               '    {msg}"'} | kwargs
 
-    lint.Run([str(path_source)] + list(args) + _pack_kwargs(kwargs))
+    lint.Run([str(path_source)] + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
 def _run_profiling(function: Callable[[], Any],
@@ -111,11 +107,10 @@ def _run_profiling(function: Callable[[], Any],
     return None
 # ----------------------------------------------------------------------
 def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
-              *args: str,
               function: str = '',
               no_warmup: str | bool | None = None,
               ignore_missing_dot: str | None = None,
-              **kwargs: str) -> int: # pylint: disable=too-many-locals
+              **kwargs: str) -> int:
     """Runs profiling and converts results into a PDF."""
 
     # parsing arguments
@@ -137,7 +132,7 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
     kwargs = {'format': 'pstats',
                'node-thres': '1',
                'output': str(path_dot)} | kwargs
-    gprof2dot_args = [str(path_pstats)] + list(args) + _pack_kwargs(kwargs)
+    gprof2dot_args = [str(path_pstats)] + _pack_kwargs(kwargs)
 
     if function:
         print(f'Profiling {function}')
@@ -161,8 +156,7 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
                        gprof2dot_args)
     return 0
 # ======================================================================
-def benchmarking(path_benchmarks: pathlib.Path = PATH_TESTS / 'benchmarking.py',
-                 *args: str) -> int:
+def benchmarking(path_benchmarks: pathlib.Path = PATH_TESTS / 'benchmarking.py') -> int:
     """Runs performance tests and save results into YAML file."""
 
     version, results = import_from_path(path_benchmarks).main()
