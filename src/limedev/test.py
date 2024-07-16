@@ -89,15 +89,17 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
     is_warmup = ~no_warmup
 
     path_profiles_folder = path_profiling.parent / 'profiles'
-    functions = {name: attr for name, attr
-                 in import_from_path(path_profiling).__dict__.items()
-                 if not name.startswith('_') and callable(attr)}
+
+    user_functions = import_from_path(path_profiling).__dict__
 
     if function: # Selecting only one
-        functions = {function: functions[function]}
+        functions = {function: user_functions[function]}
+    else:
+        functions = {name: attr for name, attr
+                     in user_functions.items()
+                     if not name.startswith('_') and callable(attr)}
 
-    if not path_profiles_folder.exists():
-        path_profiles_folder.mkdir()
+    path_profiles_folder.mkdir(parents = True, exist_ok = True)
 
     path_pstats = path_profiles_folder / '.pstats'
     path_dot = path_profiles_folder / '.dot'
