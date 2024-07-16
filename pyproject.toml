@@ -18,13 +18,15 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 authors = [
     { name = "Limespy" },
 ]
 requires-python = ">=3.10"
 readme = "README.md"
-version = "0.4.1"
+version = "0.5.0"
 dynamic = [
     "dependencies",
     "optional-dependencies",
@@ -40,6 +42,9 @@ readme = "limedev.readme:main"
 Homepage = "https://github.com/Limespy/limedev"
 Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 "Issue Tracker" = "https://github.com/Limespy/limedev/issues"
+
+[tool.limedev]
+full_name = "LimeDev"
 
 [tool.setuptools]
 include-package-data = true

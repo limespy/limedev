@@ -1,10 +1,11 @@
+"""Defining the readme.md."""
 import limedev
 from limedev import readme
 from limedev.readme import md
 #=======================================================================
 NAME = 'LimeDev'
 #=======================================================================
-def main(project_info):
+def main(_):
     """This gets called by the limedev."""
 
     semi_description = md.Document([

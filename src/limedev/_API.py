@@ -1,9 +1,8 @@
 """Package API."""
 import pathlib
-import sys
-from collections.abc import Sequence
 
 from . import CLI
+from ._aux import import_from_path # pylint: disable=unused-import
 from ._aux import PATH_CONFIGS
 from ._aux import PATH_REPO
 # ======================================================================
@@ -22,6 +21,4 @@ def install(path_repo: str | pathlib.Path = PATH_REPO, version: str = '3.12'
     subprocess.run(['pre-commit', 'install'])
     return 0
 # ======================================================================
-def main(args: Sequence[str] = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
-    """Main command line entry point."""
-    return CLI.function_cli(args, module = __name__)
+main = CLI.get_main(__name__)

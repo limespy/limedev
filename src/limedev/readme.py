@@ -8,9 +8,9 @@ from typing import Optional
 
 import yamdog as md
 
-from ._aux import _import_from_path
-from ._aux import _upsearch
+from ._aux import import_from_path
 from ._aux import PATH_REPO
+from ._aux import upsearch
 #=======================================================================
 re_heading = re.compile(r'^#* .*$')
 # ----------------------------------------------------------------------
@@ -59,7 +59,7 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
         md.CodeBlock(f'pip install {pypiname}'),
         md.Heading('Importing', 3),
         md.Paragraph([(f'Import name is '
-                       f'{"" if pypiname == package_name else "not "}'
+                       f"{'' if pypiname == package_name else 'not '}"
                        f'the same as install name, '),
                        md.Code(pypiname),
                        '.']),
@@ -116,7 +116,7 @@ def make(package,
 
     if readme_body is not None:
         doc += readme_body
-    if (path_changelog := _upsearch('*changelog.md',
+    if (path_changelog := upsearch('*changelog.md',
                                     pathlib.Path(package.__file__).parent,
                                     deep = True)) is None:
         raise FileNotFoundError('Changelog not found')
@@ -143,7 +143,7 @@ def main() -> int:
         import tomllib # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
-    user_readme  = _import_from_path(PATH_REPO / 'readme' / 'readme.py').main
+    user_readme  = import_from_path(PATH_REPO / 'readme' / 'readme.py').main
     PATH_README = PATH_REPO / 'README.md'
     PATH_PYPROJECT = PATH_REPO / 'pyproject.toml'
 
