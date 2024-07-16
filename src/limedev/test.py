@@ -74,55 +74,27 @@ def linting(path_source: pathlib.Path  = PATH_TESTS.parent / 'src',
     lint.Run([str(path_source)] + _pack_kwargs(kwargs))
     return 0
 # ======================================================================
-def _run_profiling(function: Callable[[], Any],
-                   path_pstats: pathlib.Path,
-                   path_dot: pathlib.Path,
-                   path_pdf: pathlib.Path,
-                   is_warmup: bool,
-                   ignore_missing_dot: bool,
-                   gprof2dot_args: list[str]
-                   ) -> None:
-    import cProfile
-    import gprof2dot
-    import subprocess
-    if is_warmup: # Prep to eliminate first run overhead
-        function()
-
-    with cProfile.Profile() as profiler:
-        function()
-    profiler.dump_stats(path_pstats)
-
-    gprof2dot.main(gprof2dot_args)
-    path_pstats.unlink()
-    try:
-        subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
-    except FileNotFoundError as exc:
-        if ignore_missing_dot:
-            return None
-        raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
-                        ' program is not installed.'
-                        ' See http://www.graphviz.org/download/') from exc
-    finally:
-        path_dot.unlink()
-    return None
-# ----------------------------------------------------------------------
 def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
               function: str = '',
-              no_warmup: str | bool | None = None,
-              ignore_missing_dot: str | None = None,
+              no_warmup: bool = False,
+              ignore_missing_dot: bool = False,
               **kwargs: str) -> int:
     """Runs profiling and converts results into a PDF."""
 
     # parsing arguments
+    import cProfile
+    import gprof2dot
+    import subprocess
 
-    is_warmup = no_warmup in (False, None)
-
-    ignore_missing_dot = ignore_missing_dot in (True, '')
+    is_warmup = ~no_warmup
 
     path_profiles_folder = path_profiling.parent / 'profiles'
     functions = {name: attr for name, attr
                  in import_from_path(path_profiling).__dict__.items()
                  if not name.startswith('_') and callable(attr)}
+
+    if function: # Selecting only one
+        functions = {function: functions[function]}
 
     if not path_profiles_folder.exists():
         path_profiles_folder.mkdir()
@@ -134,26 +106,31 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
                'output': str(path_dot)} | kwargs
     gprof2dot_args = [str(path_pstats)] + _pack_kwargs(kwargs)
 
-    if function:
-        print(f'Profiling {function}')
-        _run_profiling(functions[function],
-                       path_pstats,
-                       path_dot,
-                       path_profiles_folder / f'{function}.pdf',
-                       is_warmup,
-                       ignore_missing_dot,
-                       gprof2dot_args)
-        return 0
 
     for name, _function in functions.items():
         print(f'Profiling {name}')
-        _run_profiling(_function,
-                       path_pstats,
-                       path_dot,
-                       path_profiles_folder / f'{name}.pdf',
-                       is_warmup,
-                       ignore_missing_dot,
-                       gprof2dot_args)
+
+        if is_warmup: # Prep to eliminate first run overhead
+            _function()
+
+        with cProfile.Profile() as profiler:
+            _function()
+        profiler.dump_stats(path_pstats)
+
+        gprof2dot.main(gprof2dot_args)
+
+        path_pstats.unlink()
+
+        try:
+            subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_profiles_folder / f'{name}.pdf',)])
+        except FileNotFoundError as exc:
+            if ignore_missing_dot:
+                return 0
+            raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
+                            ' program is not installed.'
+                            ' See http://www.graphviz.org/download/') from exc
+        finally:
+            path_dot.unlink()
     return 0
 # ======================================================================
 def benchmarking(path_benchmarks: pathlib.Path = PATH_TESTS / 'benchmarking.py') -> int:

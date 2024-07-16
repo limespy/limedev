@@ -41,6 +41,8 @@ import limedev
 ## 0.5.0 2024-07-16 <!-- omit in toc -->
 
 - Updated CLI framework
+- Support for python 3.9 dropped
+- Support for python 3.13 added
 
 ## 0.4.1 2023-11-06 <!-- omit in toc -->
 
