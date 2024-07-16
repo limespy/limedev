@@ -100,7 +100,6 @@ def _tuple(args: list[str],
     if len(argtypes) != len(args):
         raise TypeConversionError(f"length of '{args!r}' not {len(argtypes)}")
 
-    argtypes = cast(tuple[ArgType, ...], argtypes)
     return tuplelike(_convert_type(arg, argtype)
                      for arg, argtype in zip(args, argtypes))
 # ----------------------------------------------------------------------
@@ -191,12 +190,11 @@ def _generic_alias(arg: str, argtype: GenericAlias) -> Any:
 # ----------------------------------------------------------------------
 def _union(arg: str , argtype: UnionType):
     """Handles an union of types."""
+    errormessages = []
     for subtype in argtype.__args__:
         try:
             return _convert_type(arg, subtype)
         except TypeConversionError as exc:
-            if 'errormessages' not in locals():
-                errormessages = []
             errormessages.append(str(exc))
     raise TypeConversionError('\n'.join(errormessages))
 # ----------------------------------------------------------------------

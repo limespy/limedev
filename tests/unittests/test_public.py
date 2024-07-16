@@ -15,12 +15,12 @@ def runcheck(*args, check = True, **kwargs) -> None:
 @SELF_TEST_SKIP
 def test_package():
     """Packaging function."""
-    runcheck(['package', '--no-build'])
+    runcheck(('package', '--no-build'))
 
 @SELF_TEST_SKIP
 def test_readme():
     """Readme generator."""
-    runcheck(['readme'])
+    runcheck(('readme'))
 
 # ======================================================================
 @SELF_TEST_SKIP
@@ -31,21 +31,21 @@ class Test_test:
         """Unittests handler."""
         environment = os.environ.copy()
         environment[SELF_TEST_FLAG] = ''
-        runcheck(['test', 'unittests'], env = environment)
+        runcheck(('test', 'unittests'), env = environment)
     # ------------------------------------------------------------------
     def test_profile(self):
         """Profiling handler."""
-        runcheck(['test', 'profiling', '--no_warmup', '--ignore_missing_dot'])
+        runcheck(('test', 'profiling', '--no_warmup', '--ignore_missing_dot'))
     # ------------------------------------------------------------------
     def test_typing(self):
         """Type check handler."""
-        runcheck(['test', 'typing'], check = False)
+        runcheck(('test', 'typing'), check = False)
     # ------------------------------------------------------------------
     def test_benchmarking(self):
         """Benchmarking handler."""
-        runcheck(['test', 'benchmarking'])
+        runcheck(('test', 'benchmarking'))
     # ------------------------------------------------------------------
     def test_lint(self):
         """Linting handler."""
-        runcheck(['test', 'linting'])
+        runcheck(('test', 'linting'))
     # ------------------------------------------------------------------

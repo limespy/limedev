@@ -47,13 +47,14 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     # URL
     source_url = project_info['urls'].get('Source Code',
                                           project_info['urls']['Homepage'])
-    if source_url.startswith('https://github.com'):
-        source_main_url = source_url + '/blob/main/'
     # ------------------------------------------------------------------
     # Long Description
     user_readme  = import_from_path(PATH_REPO / 'readme' / 'readme.py').main
     readme_text = str(user_readme(project_info)) + '\n'
-    readme_text_pypi = readme_text.replace('./', source_main_url)
+    readme_text_pypi = readme_text
+    if source_url.startswith('https://github.com'):
+        readme_text_pypi = readme_text_pypi.replace('(./',
+                                                    f'({source_url}/blob/main/')
     # ------------------------------------------------------------------
     # RUNNING THE BUILD
 
