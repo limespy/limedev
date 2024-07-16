@@ -2,8 +2,6 @@
 #%%=====================================================================
 # IMPORT
 import pathlib
-from collections.abc import Callable
-from typing import Any
 from typing import TypeAlias
 
 import yaml
@@ -122,9 +120,9 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
         gprof2dot.main(gprof2dot_args)
 
         path_pstats.unlink()
-
+        path_pdf = path_profiles_folder / f'{name}.pdf'
         try:
-            subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_profiles_folder / f'{name}.pdf',)])
+            subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
         except FileNotFoundError as exc:
             if ignore_missing_dot:
                 return 0
