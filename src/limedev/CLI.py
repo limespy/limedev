@@ -17,10 +17,14 @@ from types import UnionType
 from typing import Any
 from typing import cast
 from typing import Protocol
-from typing import Self
 from typing import Sequence
 from typing import TypeAlias
 from typing import TypeGuard
+
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    Self = Any
 # ======================================================================
 Parameter = inspect.Parameter
 # ======================================================================
@@ -211,7 +215,7 @@ def _enum(arg: str, argtype: enum.EnumType) -> enum.Enum:
             if member_name.casefold() == arg_cf:
                 return member
     raise TypeConversionError(f'{arg} not in members of {argtype.__name__} '
-                              f'({", ".join(argtype.__members__)})')
+                              f'({', '.join(argtype.__members__)})')
 # ----------------------------------------------------------------------
 def _bool(arg: str) -> bool:
     if arg == '':
