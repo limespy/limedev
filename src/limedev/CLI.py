@@ -213,7 +213,7 @@ def _enum(arg: str, argtype: enum.EnumType) -> enum.Enum:
             if member_name.casefold() == arg_cf:
                 return member
     raise TypeConversionError(f'{arg} not in members of {argtype.__name__} '
-                              f'({', '.join(argtype.__members__)})')
+                              f'({", ".join(argtype.__members__)})')
 # ----------------------------------------------------------------------
 def _bool(arg: str) -> bool:
     if arg == '':
