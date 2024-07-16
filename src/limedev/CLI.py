@@ -23,8 +23,10 @@ from typing import TypeGuard
 
 if sys.version_info >= (3, 11):
     from typing import Self
+    from enum import EnumType
 else:
     Self = Any
+    from enum import EnumMeta as EnumType
 # ======================================================================
 Parameter = inspect.Parameter
 # ======================================================================
@@ -198,7 +200,7 @@ def _union(arg: str , argtype: UnionType):
             errormessages.append(str(exc))
     raise TypeConversionError('\n'.join(errormessages))
 # ----------------------------------------------------------------------
-def _enum(arg: str, argtype: enum.EnumType) -> enum.Enum:
+def _enum(arg: str, argtype: EnumType) -> enum.Enum:
     """Handles a Enum.
 
     Tries to be case insensitive
@@ -234,7 +236,7 @@ def _convert_type(arg: str, argtype: ArgType) -> Any:
         if isinstance(argtype, UnionType):
             #Converts to first of the unioned types
             return _union(arg, argtype)
-        if isinstance(argtype, enum.EnumType):
+        if isinstance(argtype, EnumType):
             return _enum(arg, argtype)
         if argtype is bool:
             return _bool(arg)

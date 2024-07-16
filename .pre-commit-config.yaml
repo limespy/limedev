@@ -2,16 +2,17 @@ repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-    -   id: trailing-whitespace
-        exclude: '.*(.log)|(.csv)'
+    -   id: check-case-conflict
+    -   id: check-toml
+    -   id: check-yaml
+    -   id: double-quote-string-fixer
     -   id: end-of-file-fixer
         exclude: '.*(.log)|(.csv)'
-    -   id: check-yaml
-    -   id: check-toml
-    -   id: double-quote-string-fixer
-    -   id: requirements-txt-fixer
     -   id: no-commit-to-branch
         name: No commits to main or master branch
+    -   id: requirements-txt-fixer
+    -   id: trailing-whitespace
+        exclude: '.*(.log)|(.csv)'
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v3.13.0
     hooks:

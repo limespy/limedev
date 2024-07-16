@@ -27,6 +27,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e .[build]
       - name: Build
-        run: package --build-number
+        run: package
       - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.9
+        uses: pypa/gh-action-pypi-publish@v1.9.0
