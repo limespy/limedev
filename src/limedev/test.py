@@ -152,7 +152,7 @@ def run_timed(function, /, *args, **kwargs):
 
     args_setup = f'{args_expanded} = args\n'
     kwargs_setup = '\n'.join((f'{k} = kwargs["{k}"]' for k in kwargs))
-    setup = f'{args_setup if args else ""}\n{kwargs_setup}'
+    setup = f'{args_setup if args else ""}\n{kwargs_setup}\n' + call
 
     while (t := timeit.timeit(call, setup,
                               globals = _globals, number = n)) < t_min_s:
@@ -161,7 +161,10 @@ def run_timed(function, /, *args, **kwargs):
 # ----------------------------------------------------------------------
 _prefixes_items = (('n', 1e-9),
                    ('u', 1e-6),
-                   ('m', 1e-3))
+                   ('m', 1e-3),
+                   ('',  1.),
+                   ('k', 1e3),
+                   ('M', 1e6))
 prefixes = dict(_prefixes_items)
 # ----------------------------------------------------------------------
 def sigfig_round(value: float, n_sigfig: int) -> float:
@@ -178,7 +181,6 @@ def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
             break
         prefix_symbol_previous = prefix_symbol
         prefix_value_previous = prefix_value
-
     return (sigfig_round(value / prefix_value_previous, n_sigfig),
             prefix_symbol_previous)
 # ----------------------------------------------------------------------
