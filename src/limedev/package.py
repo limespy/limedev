@@ -50,7 +50,7 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     # ------------------------------------------------------------------
     # Long Description
     user_readme  = import_from_path(PATH_REPO / 'readme' / 'readme.py').main
-    readme_text = str(user_readme(project_info)) + '\n'
+    readme_text = str(user_readme(pyproject)) + '\n'
     readme_text_pypi = readme_text
     if source_url.startswith('https://github.com'):
         readme_text_pypi = readme_text_pypi.replace('(./',

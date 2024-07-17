@@ -3,10 +3,15 @@ import pathlib
 from collections.abc import Iterable
 from importlib import util
 from types import ModuleType
+from typing import TypeAlias
 
 PATH_BASE = pathlib.Path(__file__).parent
 PATH_CONFIGS = PATH_BASE / 'configs'
 
+_YAMLelementary: TypeAlias = int | float | str | None
+YAMLSafe: TypeAlias = (dict[_YAMLelementary, 'YAMLSafe']
+                       | list['YAMLSafe']
+                       | _YAMLelementary)
 # ======================================================================
 def upsearch(patterns: str | Iterable[str],
               path_search = pathlib.Path.cwd(),

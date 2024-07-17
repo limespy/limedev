@@ -1,17 +1,14 @@
 """Defining the readme.md."""
 import limedev
 from limedev import readme
-from limedev.readme import md
 #=======================================================================
-NAME = 'LimeDev'
-#=======================================================================
-def main(_):
+def main(pyproject: readme.PyprojectType):
     """This gets called by the limedev."""
 
-    semi_description = md.Document([
-        f'{NAME} is collection tools for Python development.\n'
-        'These tools are more or less thin wrappers around other packages.'
-    ])
+    name = pyproject['tool']['limedev']['full_name']
+    semi_description = f'''
+    {name} is collection tools for Python development.
+    These tools are more or less thin wrappers around other packages.'''
     return readme.make(limedev, semi_description,
-                       name = NAME)
+                       name = name)
 #=======================================================================
