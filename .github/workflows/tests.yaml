@@ -6,6 +6,8 @@ on:
       - main
       - release-candidate
   pull_request:
+    branches:
+      - main
   workflow_call:
 
 jobs:
