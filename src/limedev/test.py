@@ -169,8 +169,9 @@ prefixes = dict(_prefixes_items)
 # ----------------------------------------------------------------------
 def sigfig_round(value: float, n_sigfig: int) -> float:
     """Rounds to specified number of significant digits."""
-    n_decimals = max(0, n_sigfig - floor(log10(value)) - 1)
-    return round(value, n_decimals)
+    if value == 0.:
+        return value
+    return round(value, max(0, n_sigfig - floor(log10(abs(value))) - 1))
 # ----------------------------------------------------------------------
 def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
     """Shifts to nearest SI prefix fraction and rounds to given number of
