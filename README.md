@@ -38,12 +38,23 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.6.1 2024-07-17 <!-- omit in toc -->
+
+- Running the benchmakable function once in setup to better accompany numba
+- Expanding benchmarking prefixes
+
 ## 0.6.0 2024-07-17 <!-- omit in toc -->
 
 ### Features <!-- omit in toc -->
 
+#### Readme toolkit <!-- omit in toc -->
+
 - Readme tool now gives the full pyproject dictionary
-- readme tooll allows abbreviation
+- readme make tool allows abbreviation
+
+#### Testing toolkit <!-- omit in toc -->
+
+- Benchmarking tools added
 
 ## 0.5.0 2024-07-16 <!-- omit in toc -->
 
