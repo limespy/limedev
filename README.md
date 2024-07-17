@@ -38,6 +38,13 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.6.0 2024-07-17 <!-- omit in toc -->
+
+### Features <!-- omit in toc -->
+
+- Readme tool now gives the full pyproject dictionary
+- readme tooll allows abbreviation
+
 ## 0.5.0 2024-07-16 <!-- omit in toc -->
 
 - Updated CLI framework

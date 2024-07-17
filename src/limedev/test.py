@@ -2,6 +2,9 @@
 #%%=====================================================================
 # IMPORT
 import pathlib
+import timeit
+from math import floor
+from math import log10
 from typing import TypeAlias
 
 import yaml
@@ -9,6 +12,7 @@ import yaml
 from ._aux import import_from_path
 from ._aux import PATH_CONFIGS
 from ._aux import upsearch
+from ._aux import YAMLSafe
 from .CLI import get_main
 #%%=====================================================================
 if (_PATH_TESTS := upsearch('tests')) is None:
@@ -16,7 +20,6 @@ if (_PATH_TESTS := upsearch('tests')) is None:
 else:
     PATH_TESTS = _PATH_TESTS
 
-YAMLSafe = int | float | list['YAMLSafe'] | dict[str, 'YAMLSafe']
 BenchmarkResultsType: TypeAlias = tuple[str, YAMLSafe]
 #%%=====================================================================
 def _get_path_config(pattern: str, path_start: pathlib.Path = PATH_TESTS
@@ -133,6 +136,52 @@ def profiling(path_profiling: pathlib.Path = PATH_TESTS / 'profiling.py',
             path_dot.unlink()
     return 0
 # ======================================================================
+def run_timed(function, /, *args, **kwargs):
+    """Self-adjusting timing.
+
+    Minimum two runs
+    """
+    _globals = {'function': function,
+                'args': args,
+                'kwargs': kwargs}
+    t_min_s = 0.5
+    n = 2
+    args_expanded = ''.join(f'a{n}, ' for n in range(len(args)))
+    kwargs_expanded = ', '.join(f'{k} = {k}' for k in kwargs)
+    call = f'function({args_expanded}{kwargs_expanded})'
+
+    args_setup = f'{args_expanded} = args\n'
+    kwargs_setup = '\n'.join((f'{k} = kwargs["{k}"]' for k in kwargs))
+    setup = f'{args_setup if args else ""}\n{kwargs_setup}'
+
+    while (t := timeit.timeit(call, setup,
+                              globals = _globals, number = n)) < t_min_s:
+        n *= 2 * int(t_min_s / t)
+    return  t / float(n)
+# ----------------------------------------------------------------------
+_prefixes_items = (('n', 1e-9),
+                   ('u', 1e-6),
+                   ('m', 1e-3))
+prefixes = dict(_prefixes_items)
+# ----------------------------------------------------------------------
+def sigfig_round(value: float, n_sigfig: int) -> float:
+    """Rounds to specified number of significant digits."""
+    n_decimals = max(0, n_sigfig - floor(log10(value)) - 1)
+    return round(value, n_decimals)
+# ----------------------------------------------------------------------
+def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
+    """Shifts to nearest SI prefix fraction and rounds to given number of
+    significant digits."""
+    prefix_symbol_previous, prefix_value_previous = _prefixes_items[0]
+    for prefix_symbol, prefix_value in _prefixes_items[1:]:
+        if value < prefix_value:
+            break
+        prefix_symbol_previous = prefix_symbol
+        prefix_value_previous = prefix_value
+
+    return (sigfig_round(value / prefix_value_previous, n_sigfig),
+            prefix_symbol_previous)
+# ----------------------------------------------------------------------
 def benchmarking(path_benchmarks: pathlib.Path = PATH_TESTS / 'benchmarking.py') -> int:
     """Runs performance tests and save results into YAML file."""
 
