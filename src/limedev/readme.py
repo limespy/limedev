@@ -4,7 +4,7 @@ import pathlib
 import re
 from typing import Any
 from typing import Iterable
-from typing import Optional
+from typing import TypeAlias
 
 import yamdog as md
 
@@ -12,6 +12,11 @@ from ._aux import import_from_path
 from ._aux import PATH_REPO
 from ._aux import upsearch
 #=======================================================================
+_PyprojectDataType: TypeAlias = (str
+                                | dict[str, '_PyprojectDataType']
+                                | list['_PyprojectDataType'])
+
+PyprojectType: TypeAlias = dict[str, _PyprojectDataType]
 re_heading = re.compile(r'^#* .*$')
 # ----------------------------------------------------------------------
 def parse_md_element(text: str):
@@ -27,7 +32,9 @@ def parse_md(text: str):
     return md.Document([parse_md_element(item.strip())
                         for item in text.split('\n\n')])
 #=======================================================================
-def make_intro(full_name, pypiname, semi_description) -> md.Document:
+def make_intro(full_name: str,
+               pypiname: str,
+               semi_description: Any) -> md.Document:
     """Builds intro from metadata."""
 
     pypi_project_url = f'https://pypi.org/project/{pypiname}'
@@ -47,7 +54,10 @@ def make_intro(full_name, pypiname, semi_description) -> md.Document:
     doc += md.TOC()
     return doc
 #=======================================================================
-def make_setup_guide(name, pypiname, package_name, abbreviation = None
+def make_setup_guide(name: str,
+                     pypiname: str,
+                     package_name: str,
+                     abbreviation: str
                      ) -> md.Document:
     """Builds setup guide from metadata."""
     doc = md.Document([
@@ -65,11 +75,11 @@ def make_setup_guide(name, pypiname, package_name, abbreviation = None
                        '.']),
         md.CodeBlock(f'import {package_name}', 'python')])
 
-    if abbreviation is not None:
-        doc += md.Paragraph(['Since the package is accessed often, I use abbreviation ',
+    if abbreviation:
+        doc += md.Paragraph(['Since the package is accessed often,  abbreviation ',
                              md.Code(abbreviation),
-                      '. The abbreviation is used throughout this document.'])
-        doc += md.CodeBlock(f'import {pypiname} as {abbreviation}', 'python')
+                      ' is used. The abbreviation is used throughout this document.'])
+        doc += md.CodeBlock(f'import {package_name} as {abbreviation}', 'python')
     return doc
 #=======================================================================
 def make_changelog(level: int, path_changelog: pathlib.Path, version: str
@@ -88,7 +98,7 @@ def make_changelog(level: int, path_changelog: pathlib.Path, version: str
 
         for item in changelog:
             if isinstance(item, md.Heading):
-                item.level = level + 1
+                item.level += level
                 item.in_TOC = False
 
         doc += changelog
@@ -97,19 +107,20 @@ def make_changelog(level: int, path_changelog: pathlib.Path, version: str
 #=======================================================================
 def make(package,
          semi_description: Any,
-         name = None,
-         pypiname = None,
+         name: str = '',
+         pypiname: str = '',
+         abbreviation: str = '',
          quick_start: Any = None,
          readme_body: Any = None,
-         annexes: Optional[Iterable[tuple[Any, Any]]] = None,
+         annexes: Iterable[tuple[Any, Any]] = (),
          ) -> md.Document:
     """Builds a README document from given metadata and contents."""
-    if name is None:
+    if not name:
         name = package.__name__.capitalize()
-    if pypiname is None:
+    if not pypiname:
         pypiname = package.__name__
     doc = make_intro(name, pypiname, semi_description)
-    doc += make_setup_guide(name, pypiname, package.__name__)
+    doc += make_setup_guide(name, pypiname, package.__name__, abbreviation)
 
     if quick_start is not None:
         doc += quick_start
@@ -121,11 +132,9 @@ def make(package,
                                     deep = True)) is None:
         raise FileNotFoundError('Changelog not found')
 
-    doc += make_changelog(1,
-                          path_changelog,
-                          package.__version__)
+    doc += make_changelog(1, path_changelog, package.__version__)
 
-    if annexes is not None:
+    if annexes:
         doc += make_annexes(annexes)
     return doc
 #=======================================================================
@@ -143,12 +152,13 @@ def main() -> int:
         import tomllib # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
-    user_readme  = import_from_path(PATH_REPO / 'readme' / 'readme.py').main
-    PATH_README = PATH_REPO / 'README.md'
-    PATH_PYPROJECT = PATH_REPO / 'pyproject.toml'
 
-    PATH_README.write_text(str(user_readme(tomllib.loads(PATH_PYPROJECT.read_text())['project']))
-                           + '\n')
+    pyproject: PyprojectType = tomllib.loads((PATH_REPO / 'pyproject.toml'
+                                              ).read_text())
+    (PATH_REPO / 'README.md'
+     ).write_text(str(import_from_path(PATH_REPO / 'readme' / 'readme.py'
+                                       ).main(pyproject))
+                  + '\n')
     return 0
 #=======================================================================
 if __name__ == '__main__':
