@@ -105,6 +105,14 @@ def make_changelog(level: int, path_changelog: pathlib.Path, version: str
 
     return doc
 #=======================================================================
+def make_annexes(annexes: Iterable[tuple[Any, Any]]):
+    """Formats annexes into sections."""
+    doc = md.Document([md.Heading('Annexes', 1)])
+    for index, (heading_content, body) in enumerate(annexes, start = 1):
+        doc += md.Heading(2, f'Annex {index}: {heading_content}')
+        doc += body
+    return doc
+#=======================================================================
 def make(package,
          semi_description: Any,
          name: str = '',
@@ -136,14 +144,6 @@ def make(package,
 
     if annexes:
         doc += make_annexes(annexes)
-    return doc
-#=======================================================================
-def make_annexes(annexes: Iterable[tuple[Any, Any]]):
-    """Formats annexes into sections."""
-    doc = md.Document([md.Heading('Annexes', 1)])
-    for index, (heading_content, body) in enumerate(annexes, start = 1):
-        doc += md.Heading(2, f'Annex {index}: {heading_content}')
-        doc += body
     return doc
 #=======================================================================
 def main() -> int:
