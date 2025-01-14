@@ -109,12 +109,13 @@ def make_annexes(annexes: Iterable[tuple[Any, Any]]):
     """Formats annexes into sections."""
     doc = md.Document([md.Heading('Annexes', 1)])
     for index, (heading_content, body) in enumerate(annexes, start = 1):
-        doc += md.Heading(2, f'Annex {index}: {heading_content}')
+        doc += md.Heading(f'Annex {index}: {heading_content}', 2)
         doc += body
     return doc
 #=======================================================================
 def make(package,
          semi_description: Any,
+         *,
          name: str = '',
          pypiname: str = '',
          abbreviation: str = '',

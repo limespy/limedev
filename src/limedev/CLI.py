@@ -229,7 +229,7 @@ def _bool(arg: str) -> bool:
 def _convert_type(arg: str, argtype: ArgType) -> Any:
     """Converts argument to annotated type."""
     try:
-        if argtype in (Parameter.empty, Any):
+        if argtype in (Parameter.empty, Any, str):
             return arg
         if isinstance(argtype, GenericAlias):
             return _generic_alias(arg, argtype)
@@ -261,7 +261,7 @@ def cli_hooks(module: ModuleType
             and not name.startswith('_')
             and attribute.__annotations__.get('return') is int
             and name != 'main'
-            and attribute is not function_cli): # type: ignore [comparison-overlap]
+            and attribute is not function_cli):
             yield name, attribute
 # ----------------------------------------------------------------------
 def _make_helpstring(module: ModuleType) -> str:
@@ -322,9 +322,11 @@ def _convert_args(args: Sequence[str], function: FunctionType
     converted_kwargs = {}
 
     for parameter_name, cli_arg in cli_kwargs.items():
+
         parameter = parameters.pop(parameter_name, parameter_var_kw)
         converted_kwargs[parameter_name] = _convert_parameter(cli_arg,
                                                               parameter)
+        print(parameter_name, converted_kwargs[parameter_name])
     converted_args = [_convert_parameter(cli_arg, parameter)
                       for cli_arg, parameter
                       in zip(cli_args, chain(parameters.values(),

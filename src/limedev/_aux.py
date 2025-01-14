@@ -1,11 +1,11 @@
 """Helper functions and values for other modules."""
-import pathlib
 from collections.abc import Iterable
 from importlib import util
+from pathlib import Path
 from types import ModuleType
 from typing import TypeAlias
 
-PATH_BASE = pathlib.Path(__file__).parent
+PATH_BASE = Path(__file__).parent
 PATH_CONFIGS = PATH_BASE / 'configs'
 
 _YAMLelementary: TypeAlias = int | float | str | None
@@ -14,10 +14,10 @@ YAMLSafe: TypeAlias = (dict[_YAMLelementary, 'YAMLSafe']
                        | _YAMLelementary)
 # ======================================================================
 def upsearch(patterns: str | Iterable[str],
-              path_search = pathlib.Path.cwd(),
-              deep = False) -> pathlib.Path | None:
+              path_search = Path.cwd(),
+              deep = False) -> Path | None:
     """Searches for pattern gradually going up the path."""
-    path_previous = pathlib.Path()
+    path_previous = Path()
     if isinstance(patterns, str):
         patterns = (patterns,)
     while True:
@@ -37,7 +37,7 @@ if (path_base_child := upsearch(('pyproject.toml',
     raise FileNotFoundError('Base path not found')
 PATH_REPO = path_base_child.parent
 # ======================================================================
-def import_from_path(path_module: pathlib.Path) -> ModuleType:
+def import_from_path(path_module: Path) -> ModuleType:
     """Imports python module from a path."""
     spec = util.spec_from_file_location(path_module.stem, path_module)
 
