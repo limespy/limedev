@@ -38,6 +38,11 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
+## 0.6.2 2025-01-14 <!-- omit in toc -->
+
+- Changed signature of the benchmarking function
+- Best-of sampling on benchmarking function
+
 ## 0.6.1 2024-07-17 <!-- omit in toc -->
 
 - Running the benchmakable function once in setup to better accompany numba

@@ -1,7 +1,9 @@
-import os
+import sys
+from subprocess import run
 
-os.system('git config pull.rebase true')
-os.system('python -m pip install --upgrade pip')
-os.system('pip install -e .[dev]')
-os.system('pre-commit install')
-os.system('pre-commit run --files ' + __file__)
+run((sys.executable, '-m', 'pip', 'install', 'limeinstall'))
+
+try:
+    run((sys.executable, '-m', 'limeinstall', *sys.argv[1:]))
+finally:
+    run((sys.executable, '-m', 'pip', 'uninstall', 'limeinstall' ,'-y'))
