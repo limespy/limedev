@@ -1,7 +1,6 @@
 [build-system]
 requires = [
     "setuptools>=64.0",
-    "setuptools-scm>=8",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -47,9 +46,6 @@ Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 [tool.limedev]
 full_name = "LimeDev"
 
-[tool.setuptools]
-include-package-data = true
-
 [tool.setuptools.dynamic.dependencies]
 file = [
     "dependencies/requirements.txt",
@@ -76,6 +72,6 @@ where = [
 ]
 
 [tool.setuptools.package-data]
-mypkg = [
-    "*.*",
+limedev = [
+    "**/*",
 ]
