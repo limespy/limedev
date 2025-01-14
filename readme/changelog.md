@@ -1,3 +1,8 @@
+# 0.6.2 2025-01-14
+
+- Changed signature of the benchmarking function
+- Best-of sampling on benchmarking function
+
 # 0.6.1 2024-07-17
 
 - Running the benchmakable function once in setup to better accompany numba

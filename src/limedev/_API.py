@@ -2,7 +2,7 @@
 import pathlib
 
 from . import CLI
-from ._aux import import_from_path # pylint: disable=unused-import
+from ._aux import import_from_path # noqa: F401
 from ._aux import PATH_CONFIGS
 from ._aux import PATH_REPO
 # ======================================================================
