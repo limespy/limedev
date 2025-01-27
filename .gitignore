@@ -1,6 +1,6 @@
 .*
 !.github
-!.pylintrc
+!.pre-commit-config.yaml
 
 # Utilities
 sandbox*
