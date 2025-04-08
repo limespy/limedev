@@ -21,4 +21,4 @@ def install(path_repo: str | pathlib.Path = PATH_REPO, version: str = '3.12'
     subprocess.run(['pre-commit', 'install'])
     return 0
 # ======================================================================
-main = CLI.get_main(__name__)
+main = CLI.get_main(__name__, 'LimeDev')

@@ -1,0 +1,17 @@
+name: Verify
+description: Runs tests and pre-build process
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - release-candidate
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verification:
+    uses: ./.github/reusable/verify.yaml
+    with:
+      python-version: '3.13'

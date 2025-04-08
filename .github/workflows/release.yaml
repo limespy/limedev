@@ -1,0 +1,14 @@
+name: Release
+descriptions: Build and publish package
+
+on:
+  push:
+    branches:
+      - main
+      - release-candidate
+
+jobs:
+  release:
+    uses: ./.github/reusable/release.yaml
+    with:
+      python-version: '3.13'

@@ -1,0 +1,33 @@
+name: Verify
+description: Runs tests and pre-build process
+
+on:
+  workflow_call:
+    inputs:
+      python-version-build:
+        required: true
+        type: string
+      python-version-min:
+        required: false
+        type: string
+      python-version-max:
+        required: true
+        type: string
+
+jobs:
+  functional:
+    uses: ./.github/_subworkflows/_tests.yaml
+    with:
+      python-version-min: ${{ python-version-min }}
+      python-version-max: ${{ python-version-max }}
+  packaging:
+    needs: functional
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Build
+        uses: ./.github/actions/_build.yaml
+        with:
+          python-version: ${{ python-version-build }}
+          packaging-args: --no-build

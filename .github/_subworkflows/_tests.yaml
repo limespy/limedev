@@ -1,0 +1,40 @@
+name: Functional tests
+
+on: workflow_call
+
+jobs:
+  python-versions:
+    outputs:
+      python-versions:
+        type: string
+        value: ${{ steps.read_tox_ini.outputs.python-versions}}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '>=3.12'
+    - name: Read tox.ini
+      id: read_tox_ini
+      run: python -c "import configparser; config = configparser.ConfigParser(); config.read('tox.ini'); print(f'python-versions=[{', '.join([f'\"{s.partition(':')[0]}\"' for s in config['gh-actions']['python'].split('\n') if s])}]')" >> "$GITHUB_OUTPUT"
+
+  tests:
+    needs: python-versions
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: ${{ fromJSON(needs.python_versions.outputs.python-versions }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+    - name: Install Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: uv tool install tox --with tox-gh-actions --with tox-uv
+    - name: Test with tox
+      run: uvx tox

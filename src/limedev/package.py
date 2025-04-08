@@ -4,16 +4,15 @@
 distributions."""
 # ======================================================================
 # IMPORT
-import re
 import sys
 import time
 
 import tomli_w
-from build import __main__ as build
 
 from ._aux import import_from_path
 from ._aux import PATH_REPO
 from ._aux import upsearch
+from build import __main__ as build
 
 try:
     import tomllib
@@ -35,14 +34,6 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     # Loading the pyproject TOML file
     pyproject = tomllib.loads(path_pyproject.read_text())
     project_info = pyproject['project']
-    version = re.search(r"(?<=__version__ = ').*(?=')",
-                        next((PATH_REPO / 'src').rglob('__init__.py')
-                             ).read_text())[0]
-
-    if '--build-number' in args:
-        version += f'.{time.time():.0f}'
-
-    project_info['version'] = version
     # ------------------------------------------------------------------
     # URL
     source_url = project_info['urls'].get('Source Code',
@@ -55,6 +46,10 @@ def main(args = sys.argv[1:]) -> int: # pylint: disable=dangerous-default-value
     if source_url.startswith('https://github.com'):
         readme_text_pypi = readme_text_pypi.replace('(./',
                                                     f'({source_url}/blob/main/')
+    # ------------------------------------------------------------------
+    # Build number
+    if '--build-number' in args:
+        project_info['version'] += f'.{time.time():.0f}'
     # ------------------------------------------------------------------
     # RUNNING THE BUILD
 
