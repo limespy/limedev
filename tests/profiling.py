@@ -13,4 +13,4 @@ def readme():
 
 def sleep():
     """Just sleeping."""
-    time.sleep(1)
+    time.sleep(0.5)

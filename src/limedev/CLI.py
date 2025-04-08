@@ -335,7 +335,8 @@ def _convert_args(args: Sequence[str], function: FunctionType
     return converted_args, converted_kwargs
 # ----------------------------------------------------------------------
 def function_cli(args: list[str] = sys.argv[1:],
-                 module: str | ModuleType = '__main__') -> int:
+                 module: str | ModuleType = '__main__',
+                 package: str = '') -> int:
     """Functions as main able to run functions matching signature and generate
     helptext.
 
@@ -360,6 +361,19 @@ def function_cli(args: list[str] = sys.argv[1:],
         print(_make_helpstring(module))
         return 0
 
+    if args[0] == '--version':
+
+        if module.__package__:
+            _package = sys.modules[module.__package__]
+            name = package if package else module.__package__
+        else:
+            _package = module
+            name = package if package else module.__name__
+
+        print(name, _package.__version__)
+        return 0
+
+
     try:
         function = getattr(module, args[0])
     except AttributeError:
@@ -378,6 +392,6 @@ def function_cli(args: list[str] = sys.argv[1:],
         print(output)
     return 0
 # ======================================================================
-def get_main(module: str | ModuleType = '__main__'):
+def get_main(module: str | ModuleType = '__main__', package: str = ''):
     """Generating main function from module or module name."""
-    return partial(function_cli, module = module)
+    return partial(function_cli, module = module, package = package)

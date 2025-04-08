@@ -241,12 +241,20 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
         # Based on:
         #   "Recipe 496767: Set Process Priority In Windows" on ActiveState
         #   http://code.activestate.com/recipes/496767/
-        import win32api, win32process, win32con
-
-        pid = win32api.GetCurrentProcessId()
-        handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
-        win32process.SetPriorityClass(handle,
-                                        win32process.REALTIME_PRIORITY_CLASS)
+        try:
+            import win32api
+            import win32process
+            from win32con import PROCESS_ALL_ACCESS
+        except ModuleNotFoundError:
+            from warnings import warn
+            warn('pywin32 is not installed. '
+                 'Maybe due to incompatible Python version',
+                 ImportWarning, stacklevel = 2)
+        else:
+            pid = win32api.GetCurrentProcessId()
+            handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, True, pid)
+            win32process.SetPriorityClass(handle,
+                                          win32process.REALTIME_PRIORITY_CLASS)
     elif platform == 'linux':
         import os
 
