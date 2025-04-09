@@ -258,7 +258,7 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
     elif platform == 'linux':
         import os
 
-        os.nice(-20 - os.nice()) # type: ignore[attr-defined]
+        os.nice(-20 - os.nice(0)) # type: ignore[attr-defined]
 
     version, results = import_from_path(path_benchmarks).main(**kwargs)
 
