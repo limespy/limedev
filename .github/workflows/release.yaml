@@ -9,7 +9,7 @@ on:
 
 jobs:
   tests:
-    uses: ./.github/workflows/tests.yamlv0
+    uses: ./.github/workflows/tests.yaml
 
   build_and_publish:
     needs: tests
@@ -18,7 +18,7 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: ./.github/actions/_build.yamlv0
+        uses: ./.github/actions/_build.yaml
         with:
           python-version: '3.13'
           packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
