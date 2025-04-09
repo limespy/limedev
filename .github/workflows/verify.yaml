@@ -12,7 +12,7 @@ on:
 
 jobs:
   functional:
-    uses: ./.github/_subworkflows/_tests.yaml@v0
+    uses: ./.github/workflows/tests.yaml@v0
   packaging:
     needs: functional
     runs-on: ubuntu-latest

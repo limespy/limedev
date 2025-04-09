@@ -10,7 +10,7 @@ on:
 
 jobs:
   tests:
-    uses: Limespy/limedev/.github/_subworkflows/_tests.yaml@v0
+    uses: Limespy/limedev/.github/workflows/tests.yaml@v0
 
   build_and_publish:
     needs: tests
