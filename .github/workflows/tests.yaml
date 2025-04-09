@@ -6,7 +6,6 @@ jobs:
   python-versions:
     outputs:
       python-versions:
-        type: string
         value: ${{ steps.read_tox_ini.outputs.python-versions}}
     runs-on: ubuntu-latest
     steps:
