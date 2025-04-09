@@ -10,7 +10,7 @@ on:
 
 jobs:
   functional:
-    uses: Limespy/limedev/.github/_subworkflows/_tests.yaml@v0
+    uses: Limespy/limedev/.github/workflows/tests.yaml@v0
   packaging:
     needs: functional
     runs-on: ubuntu-latest
