@@ -7,7 +7,7 @@ jobs:
     outputs:
       python-versions:
         type: string
-        value: ${{ steps.read_tox_ini.outputs.python-versions}}
+        value: ${{ steps.read_tox_ini.outputs}}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -18,9 +18,9 @@ jobs:
         python-version: '>=3.12'
     - name: Read tox.ini
       id: read_tox_ini
-      run: python -c "import configparser; config = configparser.ConfigParser(); config.read('tox.ini'); print(f'python-versions=[{', '.join([f'\"{s.partition(':')[0]}\"' for s in config['gh-actions']['python'].split('\n') if s])}]')" >> "$GITHUB_OUTPUT"
+      run: python -c "import configparser; config = configparser.ConfigParser(); config.read('tox.ini'); print(f'[{', '.join([f'\"{s.partition(':')[0]}\"' for s in config['gh-actions']['python'].split('\n') if s])}]')" >> "$GITHUB_OUTPUT"
     - name: Check
-      run: echo ${{ steps.read_tox_ini.outputs.python-versions}}
+      run: echo ${{ steps.read_tox_ini.outputs}}
 
   tests:
     needs: python-versions
