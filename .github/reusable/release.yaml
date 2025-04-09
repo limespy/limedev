@@ -19,7 +19,7 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: Limespy/limedev/.github/actions/_build.yamlv0
+        uses: Limespy/limedev/.github/actions/_build.yaml@v0
         with:
           python-version: ${{ inputs.python-version }}
           packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
