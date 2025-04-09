@@ -8,7 +8,21 @@ on:
       - release-candidate
 
 jobs:
-  release:
-    uses: ./.github/reusable/release.yaml
-    with:
-      python-version: '3.13'
+  tests:
+    uses: ./.github/_subworkflows/_tests.yamlv0
+
+  build_and_publish:
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Build
+        uses: Limespy/limedev/.github/actions/_build.yamlv0
+        with:
+          python-version: '3.13'
+          packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@v1
+        with:
+          repository-url: ${{ github.ref == 'refs/heads/main' && 'https://upload.pypi.org/legacy/' || 'https://test.pypi.org/legacy/' }}

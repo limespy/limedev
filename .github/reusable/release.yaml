@@ -10,7 +10,7 @@ on:
 
 jobs:
   tests:
-    uses: Limespy/limedev/.github/_subworkflows/_tests.yaml
+    uses: Limespy/limedev/.github/_subworkflows/_tests.yaml@v0
 
   build_and_publish:
     needs: tests
@@ -19,7 +19,7 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: Limespy/limedev/.github/actions/_build.yaml
+        uses: Limespy/limedev/.github/actions/_build.yamlv0
         with:
           python-version: ${{ inputs.python-version }}
           packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
