@@ -4,9 +4,6 @@ on: workflow_call
 
 jobs:
   python-versions:
-    outputs:
-      python-versions:
-        value: ${{ steps.read_tox_ini.outputs.python-versions}}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
