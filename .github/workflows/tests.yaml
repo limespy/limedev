@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ${{ fromJSON(needs.python_versions.outputs.python-versions }}
+        python-version: ${{ fromJSON(needs.python-versions.outputs.python-versions }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
