@@ -11,7 +11,16 @@ on:
       - main
 
 jobs:
-  verification:
-    uses: ./.github/reusable/verify.yaml
-    with:
-      python-version: '3.13'
+  functional:
+    uses: ./.github/_subworkflows/_tests.yaml@v0
+  packaging:
+    needs: functional
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - name: Build
+        uses: ./.github/actions/_build.yamlv0
+        with:
+          python-version: '3.13'
+          packaging-args: --no-build
