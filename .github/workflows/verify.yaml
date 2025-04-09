@@ -20,7 +20,7 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: ./.github/actions/_build.yamlv0
+        uses: ./.github/actions/_build.yaml@v0
         with:
           python-version: '3.13'
           packaging-args: --no-build
