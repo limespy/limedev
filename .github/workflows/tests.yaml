@@ -13,10 +13,12 @@ jobs:
       with:
         python-version: '>=3.12'
     - name: Read tox.ini
-      id: read_tox_ini
+      id: read-tox-ini
       run: python -c "import configparser; config = configparser.ConfigParser(); config.read('tox.ini'); print(f'python-versions=[{', '.join([f'\"{s.partition(':')[0]}\"' for s in config['gh-actions']['python'].split('\n') if s])}]', end = '')" >> "$GITHUB_OUTPUT"
     - name: Check
-      run: echo ${{ steps.read_tox_ini.outputs.python-versions}}
+      run: echo "${{ steps.read_tox_ini.outputs.python-versions}}"
+    outputs:
+      python-versions: ${{ steps.read_tox_ini.outputs.python-versions }}
 
   tests:
     needs: python-versions
@@ -24,7 +26,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ["3.10", "3.14.0-alpha.6"]
+        python-version: ${{ fromJson(needs.python-versions.outputs.python-versions) }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
