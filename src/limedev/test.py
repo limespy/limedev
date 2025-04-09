@@ -253,13 +253,27 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
         else:
             pid = win32api.GetCurrentProcessId()
             handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, True, pid)
-            win32process.SetPriorityClass(handle,
-                                          win32process.REALTIME_PRIORITY_CLASS)
+            try:
+                win32process.SetPriorityClass(handle,
+                                            win32process.REALTIME_PRIORITY_CLASS)
+            except PermissionError as error:
+                if error.errno == 1:
+                    from warnings import warn
+                    warn('Raising the process priority not permitted',
+                         RuntimeWarning, stacklevel = 2)
+                else:
+                    raise
     elif platform == 'linux':
         import os
-
-        os.nice(-20 - os.nice(0)) # type: ignore[attr-defined]
-
+        try:
+            os.nice(-20 - os.nice(0)) # type: ignore[attr-defined]
+        except PermissionError as error:
+            if error.errno == 1:
+                from warnings import warn
+                warn('Raising the process priority not permitted',
+                     RuntimeWarning, stacklevel = 2)
+            else:
+                raise
     version, results = import_from_path(path_benchmarks).main(**kwargs)
 
     if out is None:
