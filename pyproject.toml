@@ -46,6 +46,36 @@ Homepage = "https://github.com/Limespy/limedev"
 Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 "Issue Tracker" = "https://github.com/Limespy/limedev/issues"
 
+[dependency-groups]
+dev = [
+    "pre-commit >= 3.2.2,<4",
+    { include-group = "benchmarking" },
+    { include-group = "build" },
+    { include-group = "profiling" },
+    { include-group = "tox" },
+    { include-group = "typing" },
+    { include-group = "unittests" },
+]
+benchmarking = [
+    "limedev[test-benchmarking]",
+]
+build = [
+    "limedev[package]",
+]
+profiling = [
+    "limedev[test-profiling]",
+]
+tox = [
+    "tox >= 4.22",
+    "tox-uv >= 1.25.0",
+]
+typing = [
+    "limedev[test-typing]",
+]
+unittests = [
+    "limedev[test-unittests]",
+]
+
 [tool.limedev]
 full_name = "LimeDev"
 
@@ -53,12 +83,6 @@ full_name = "LimeDev"
 file = [
     "dependencies/requirements.txt",
 ]
-
-[tool.setuptools.dynamic.optional-dependencies.dev]
-file = "dependencies/requirements_dev.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.build]
-file = "dependencies/requirements_build.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.package]
 file = "dependencies/requirements_package.txt"
@@ -68,6 +92,30 @@ file = "dependencies/requirements_readme.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test]
 file = "dependencies/requirements_test.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-benchmarking]
+file = "dependencies/requirements_test-benchmarking.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-linting]
+file = "dependencies/requirements_test-linting.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-profiling]
+file = "dependencies/requirements_test-profiling.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-typing]
+file = "dependencies/requirements_test-typing.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-unittests]
+file = "dependencies/requirements_test-unittests.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.dev]
+file = "dependencies/requirements_dev.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.build]
+file = "dependencies/requirements_build.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.all]
+file = "dependencies/requirements_all.txt"
 
 [tool.setuptools.packages.find]
 where = [

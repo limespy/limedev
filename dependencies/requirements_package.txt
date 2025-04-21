@@ -1,5 +1,5 @@
 build >= 0.10.0
+limedev[readme]
 tomli >= 2.0.1 ; python_version < '3.11'
 tomli-w >= 1.0.0
 wheel >= 0.38
-yamdog >= 0.6.0
