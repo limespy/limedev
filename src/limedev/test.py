@@ -8,8 +8,6 @@ from pathlib import Path
 from typing import ParamSpec
 from typing import TYPE_CHECKING
 
-import yaml
-
 from ._aux import import_from_path
 from ._aux import PATH_CONFIGS
 from ._aux import upsearch
@@ -41,7 +39,10 @@ else:
 #%%=====================================================================
 def _get_path_config(pattern: str, path_start: Path = PATH_TESTS
                      ) -> Path:
-    """Loads test configuration file paths or supplies default if not found."""
+    """Loads test configuration file paths or supplies.
+
+    default if not found.
+    """
     return (PATH_CONFIGS / pattern
             if (path_local := upsearch(pattern, path_start)) is None
             else path_local)
@@ -220,8 +221,10 @@ def sigfig_round(value: float, n_sigfig: int) -> float:
     return round(value, max(0, n_sigfig - floor(log10(abs(value))) - 1))
 # ----------------------------------------------------------------------
 def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
-    """Shifts to nearest SI prefix fraction and rounds to given number of
-    significant digits."""
+    """Engineering rounding.
+
+    Shifts to nearest SI prefix fraction and rounds to given significant digits.
+    """
     prefix_symbol_previous, prefix_value_previous = _prefixes_items[0]
     for prefix_symbol, prefix_value in _prefixes_items[1:]:
         if value < prefix_value:
@@ -234,46 +237,43 @@ def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
 def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
                  out: Path | None = None,
                  **kwargs: str) -> int:
-    """Runs performance tests and save results into YAML file."""
+    """Runs performance tests and save results into YAML.
+
+    file.
+    """
     from sys import platform
+    import yaml
     # Setting process to realtime
-    if platform == 'win32':
-        # Based on:
-        #   "Recipe 496767: Set Process Priority In Windows" on ActiveState
-        #   http://code.activestate.com/recipes/496767/
-        try:
-            import win32api
-            import win32process
-            from win32con import PROCESS_ALL_ACCESS
-        except ModuleNotFoundError:
-            from warnings import warn
-            warn('pywin32 is not installed. '
-                 'Maybe due to incompatible Python version',
-                 ImportWarning, stacklevel = 2)
-        else:
-            pid = win32api.GetCurrentProcessId()
-            handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, True, pid)
+    try:
+        if platform == 'win32':
+            # Based on:
+            #   "Recipe 496767: Set Process Priority In Windows" on ActiveState
+            #   http://code.activestate.com/recipes/496767/
             try:
+                import win32api
+                import win32process
+                from win32con import PROCESS_ALL_ACCESS
+            except ModuleNotFoundError:
+                from warnings import warn
+                warn('pywin32 is not installed. '
+                    'Maybe due to incompatible Python version',
+                    ImportWarning, stacklevel = 2)
+            else:
+                pid = win32api.GetCurrentProcessId()
+                handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, True, pid)
                 win32process.SetPriorityClass(handle,
                                             win32process.REALTIME_PRIORITY_CLASS)
-            except PermissionError as error:
-                if error.errno == 1:
-                    from warnings import warn
-                    warn('Raising the process priority not permitted',
-                         RuntimeWarning, stacklevel = 2)
-                else:
-                    raise
-    elif platform == 'linux':
-        import os
-        try:
+
+        elif platform == 'linux':
+            import os
             os.nice(-20 - os.nice(0)) # type: ignore[attr-defined]
-        except PermissionError as error:
-            if error.errno == 1:
-                from warnings import warn
-                warn('Raising the process priority not permitted',
-                     RuntimeWarning, stacklevel = 2)
-            else:
-                raise
+    except PermissionError as error:
+        if error.errno == 1:
+            from warnings import warn
+            warn('Raising the process priority not permitted',
+                    RuntimeWarning, stacklevel = 2)
+        else:
+            raise
     version, results = import_from_path(path_benchmarks).main(**kwargs)
 
     if out is None:
