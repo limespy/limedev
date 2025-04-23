@@ -1,7 +1,9 @@
 # General
 .*
-!.github
 !.gitignore
+!.github
+!.gitmodules
+
 !.pre-commit-config.yaml
 
 # Sandbox
@@ -13,9 +15,15 @@ sandbox*
 *.x3g
 
 # Python
+
 __pycache__
 
-# Distribution / packaging
+## Distribution / packaging
+
 *.egg-info
 dist/
 build/
+
+## UV
+
+uv.lock

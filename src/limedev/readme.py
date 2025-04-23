@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import yamdog as md
 
 from ._aux import import_from_path
-from ._aux import PATH_REPO
+from ._aux import PATH_PROJECT
 from ._aux import upsearch
 #=======================================================================
 # Hinting types
@@ -68,8 +68,12 @@ else:
 re_heading = re.compile(r'^#* .*$')
 # ----------------------------------------------------------------------
 def parse_md_element(text: str):
-    """Very simple parser able to parse part of markdown syntax into YAMDOG
-    objects."""
+    """Very simple parser able to parse part of markdown syntax into.
+
+    YAMDOG.
+
+    objects.
+    """
     if match := re_heading.match(text):
         hashes, content = match[0].split(' ', 1)
         return md.Heading(content, len(hashes))
@@ -203,9 +207,9 @@ def main() -> int:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
 
     pyproject: Pyproject = tomllib.loads(( # type: ignore[assignment]
-        PATH_REPO / 'pyproject.toml').read_text())
-    (PATH_REPO / 'README.md'
-     ).write_text(str(import_from_path(PATH_REPO / 'readme' / 'readme.py'
+        PATH_PROJECT / 'pyproject.toml').read_text())
+    (PATH_PROJECT / 'README.md'
+     ).write_text(str(import_from_path(PATH_PROJECT / 'readme' / 'readme.py'
                                        ).main(pyproject))
                   + '\n')
     return 0

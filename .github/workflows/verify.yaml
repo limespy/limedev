@@ -21,6 +21,3 @@ jobs:
     steps:
       - name: Build
         uses: ./.github/actions/_build.yaml
-        with:
-          python-version: '3.13'
-          packaging-args: --no-build
