@@ -1,18 +1,21 @@
 """Test invokers."""
 #%%=====================================================================
 # IMPORT
-import timeit
+from enum import Enum
 from math import floor
 from math import log10
 from pathlib import Path
+from timeit import timeit
 from typing import ParamSpec
 from typing import TYPE_CHECKING
 
 from ._aux import import_from_path
-from ._aux import PATH_CONFIGS
+from ._aux import PATH_DEFAULT_CONFIGS
+from ._aux import PATH_PROJECT
 from ._aux import upsearch
 from ._aux import YAMLSafe
 from .CLI import get_main
+
 # ======================================================================
 # Hinting types
 P = ParamSpec('P')
@@ -20,49 +23,93 @@ P = ParamSpec('P')
 if TYPE_CHECKING:
     from collections.abc import Callable
     from collections.abc import Generator
+    from collections.abc import Iterable
     from typing import TypeAlias
     from typing import TypeVar
 
     T = TypeVar('T')
     BenchmarkResultsType: TypeAlias = tuple[str, YAMLSafe]
 else:
-    Callable = Generator = tuple
+    Callable = Generator = Iterable = tuple
     T = BenchmarkResultsType = object
 #%%=====================================================================
-if (_PATH_TESTS := upsearch('tests')) is None:
-    PATH_TESTS = PATH_SRC = Path.cwd()
-else:
-    PATH_TESTS = _PATH_TESTS
-    PATH_SRC = _PATH_TESTS.parent / 'src'
-    if not PATH_SRC.exists():
-        PATH_SRC = PATH_SRC.parent
+def _try_get_path(path_project: Path, patterns: Iterable[str]
+                  ) -> Path | None:
+    for pattern in patterns:
+        try:
+            if (path_src := next(path_project.glob(pattern))).is_dir():
+                return path_src
+        except StopIteration:
+            pass
+    return None
+# ----------------------------------------------------------------------
+PATH_TESTS = _try_get_path(PATH_PROJECT, ('tests', 'test'))
+PATH_SRC = _try_get_path(PATH_PROJECT, ('src', 'source')) or PATH_PROJECT
 #%%=====================================================================
-def _get_path_config(pattern: str, path_start: Path = PATH_TESTS
-                     ) -> Path:
+def _get_path_config(patterns: str | Iterable[str],
+                     path_start: Path | None = PATH_TESTS
+                     ) -> Path | None:
     """Loads test configuration file paths or supplies.
 
     default if not found.
     """
-    return (PATH_CONFIGS / pattern
-            if (path_local := upsearch(pattern, path_start)) is None
-            else path_local)
+    if path_start:
+        if _path_config := upsearch(patterns, path_start,
+        path_stop = PATH_PROJECT):
+            return _path_config
+    return upsearch(patterns, PATH_DEFAULT_CONFIGS)
 # ======================================================================
 def _pack_kwargs(kwargs: dict[str, str]) -> Generator[str, None, None]:
 
     return (f"--{key}{'=' if value else ''}{value}"
             for key, value in kwargs.items())
 # ======================================================================
-def unittests(path_unittests: Path = PATH_TESTS / 'unittests',
+def unittests(path_unittests: Path | None = None,
               cov: bool = False,
+              tests: str = '',
               **kwargs: str
               ) -> int:
     """Starts pytest unit tests."""
     import pytest
-    if cov and 'cov-report' not in kwargs:
+
+    if path_unittests is None:
+        if PATH_TESTS is None:
+            path_unittests = PATH_PROJECT
+        elif not (path_unittests := PATH_TESTS / 'unittests').exists():
+            path_unittests = PATH_TESTS
+
+    if cov and ('cov-report' not in kwargs):
         kwargs['cov-report'] = f"html:{path_unittests/'htmlcov'}"
 
-    pytest.main([str(path_unittests), *_pack_kwargs(kwargs)])
-    return 0
+    if (config_file_arg := kwargs.get('config-file')) is None:
+        # Trying to find and insert a config file
+        try:
+            # Looking recursively under unittest forlder
+            kwargs['config-file'] = str(next(path_unittests.rglob('pytest.ini')))
+        except StopIteration:
+            path_config = upsearch('pytest.ini',
+                                   path_unittests,
+                                   path_stop = PATH_PROJECT)
+            if path_config is None:
+
+                if (path_config := upsearch('pyproject.toml',
+                                               path_unittests,
+                                               path_stop = PATH_PROJECT)
+                    ) is not None:
+                    if path_config.read_text().find('[tool.pytest.ini_options]') == -1:
+                        # Configuration not found
+                        path_config = upsearch('pytest.ini',
+                                               PATH_DEFAULT_CONFIGS)
+
+            if path_config is not None:
+                kwargs['config-file'] = str(path_config)
+
+    elif config_file_arg == '':
+        kwargs.pop('config-file')
+    if (status := pytest.main([str(path_unittests), '-k', tests,
+                                 *_pack_kwargs(kwargs)])) == 0:
+        return status
+    raise Exception(f'Exit status {status}')
 # ======================================================================
 def typing(path_src: Path = PATH_SRC,
            config_file: str = str(_get_path_config('mypy.ini')),
@@ -78,7 +125,7 @@ def typing(path_src: Path = PATH_SRC,
     mypy(args = [str(path_src), *_pack_kwargs(kwargs)])
     return 0
 # ======================================================================
-def linting(path_source: Path = PATH_SRC,
+def linting(path_source: Path | None = PATH_SRC,
             *,
             config: str = str(_get_path_config('ruff.toml')),
             **kwargs: str
@@ -101,28 +148,36 @@ def linting(path_source: Path = PATH_SRC,
     print(f'Linting {path_source_str}')
 
     if sys.platform == 'win32':
-        import subprocess
-
-        completed_process = subprocess.run(args)
-        return completed_process.returncode
+        from subprocess import run
+        return run(args).returncode
     else:
         os.execvp(ruff, args)
         return 0
 # ======================================================================
-def profiling(path_profiling: Path = PATH_TESTS / 'profiling.py',
+class MissingDot(Enum):
+    ERROR = 0
+    WARN = 1
+    IGNORE = 2
+# ----------------------------------------------------------------------
+def profiling(path_profiling: Path | None = None,
               out: Path | None = None,
               function: str = '',
               no_warmup: bool = False,
-              ignore_missing_dot: bool = False,
+              missing_dot: MissingDot = MissingDot.ERROR,
               **kwargs: str) -> int:
     """Runs profiling and converts results into a PDF."""
 
     # parsing arguments
     from cProfile import Profile
-    import gprof2dot
-    import subprocess
+    from subprocess import run
+    from time import perf_counter
 
-    is_warmup = not no_warmup
+    import gprof2dot
+
+    if path_profiling is None:
+        path_profiling = (PATH_PROJECT / 'profiling.py' if PATH_TESTS is None
+                          else PATH_TESTS / 'profiling.py')
+
     if out is None:
         out = path_profiling.parent / '.profiles'
 
@@ -141,19 +196,25 @@ def profiling(path_profiling: Path = PATH_TESTS / 'profiling.py',
     path_pstats = out / '.pstats'
     path_dot = out / '.dot'
     kwargs = {'format': 'pstats',
-               'node-thres': '1',
+               'node-thres': '1', # 1 percent threshold
                'output': str(path_dot)} | kwargs
     gprof2dot_args = [str(path_pstats), *_pack_kwargs(kwargs)]
 
 
     for name, _function in functions.items():
         print(f'Profiling {name}')
-
-        if is_warmup: # Prep to eliminate first run overhead
+        if not no_warmup: # Prep to eliminate first run overhead
+            t0 = perf_counter()
             _function()
+            value, prefix = eng_round(perf_counter() - t0)
+            print(f'Warmup time {value:3.1f} {prefix}s')
 
+        t0 = perf_counter()
         with Profile() as profiler:
             _function()
+
+        value, prefix = eng_round(perf_counter() - t0)
+        print(f'Profiling time {value:3.1f} {prefix}s')
 
         profiler.dump_stats(path_pstats)
 
@@ -162,20 +223,25 @@ def profiling(path_profiling: Path = PATH_TESTS / 'profiling.py',
         path_pstats.unlink()
         path_pdf = out / (name + '.pdf')
         try:
-            subprocess.run(['dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)])
+            run(('dot', '-Tpdf', str(path_dot), '-o', str(path_pdf)))
         except FileNotFoundError as exc:
-            if ignore_missing_dot:
+            if missing_dot is MissingDot.IGNORE:
                 return 0
-            raise RuntimeError('Conversion to PDF failed, maybe graphviz dot'
-                            ' program is not installed.'
-                            ' See http://www.graphviz.org/download/') from exc
+            message = ('Conversion to PDF failed, maybe Graphviz dot'
+                       ' program is not installed.'
+                       ' See http://www.graphviz.org/download/')
+            if missing_dot is MissingDot.WARN:
+                from warnings import warn
+                warn(message, RuntimeWarning, stacklevel = 2)
+                return 0
+            raise RuntimeError(message) from exc
         finally:
             path_dot.unlink()
     return 0
 # ======================================================================
 def _run_best_of(call: str, setup: str,
                  _globals: dict, number: int, samples: int) -> float:
-    return min(timeit.timeit(call, setup, globals = _globals, number = number)
+    return min(timeit(call, setup, globals = _globals, number = number)
                for _ in range(samples))
 # ----------------------------------------------------------------------
 def run_timed(function: Callable[P, T],
@@ -234,7 +300,7 @@ def eng_round(value: float, n_sigfig: int = 3) -> tuple[float, str]:
     return (sigfig_round(value / prefix_value_previous, n_sigfig),
             prefix_symbol_previous)
 # ----------------------------------------------------------------------
-def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
+def benchmarking(path_benchmarks: Path | None = None,
                  out: Path | None = None,
                  **kwargs: str) -> int:
     """Runs performance tests and save results into YAML.
@@ -243,6 +309,14 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
     """
     from sys import platform
     import yaml
+
+    if path_benchmarks is None:
+        if PATH_TESTS is None:
+            raise ValueError('Benchmark path not provided '
+                             'and test path not found')
+        else:
+            path_benchmarks = PATH_TESTS / 'benchmarking.py'
+
     # Setting process to realtime
     try:
         if platform == 'win32':
@@ -256,8 +330,8 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
             except ModuleNotFoundError:
                 from warnings import warn
                 warn('pywin32 is not installed. '
-                    'Maybe due to incompatible Python version',
-                    ImportWarning, stacklevel = 2)
+                     'Maybe due to incompatible Python version',
+                     ImportWarning, stacklevel = 2)
             else:
                 pid = win32api.GetCurrentProcessId()
                 handle = win32api.OpenProcess(PROCESS_ALL_ACCESS, True, pid)
@@ -271,7 +345,7 @@ def benchmarking(path_benchmarks: Path = PATH_TESTS / 'benchmarking.py',
         if error.errno == 1:
             from warnings import warn
             warn('Raising the process priority not permitted',
-                    RuntimeWarning, stacklevel = 2)
+                 RuntimeWarning, stacklevel = 2)
         else:
             raise
     version, results = import_from_path(path_benchmarks).main(**kwargs)

@@ -31,8 +31,12 @@ else:
 Parameter = inspect.Parameter
 # ======================================================================
 def _quotestrip(arg: str) -> str:
-    """Removes quotes from the beginning and the end of the argument if they
-    match."""
+    """Removes quotes from the beginning and the end of the argument if.
+
+    they.
+
+    match.
+    """
     return (arg[1:-1] if (len(arg) >= 2
                           and (arg[0], arg[-1]) in (("'", "'"), ('"', '"')))
             else arg)
@@ -112,7 +116,9 @@ def _collection(args: list[str], argtype: ArgType,
     return collectionlike(_convert_type(arg, argtype) for arg in args)
 # ----------------------------------------------------------------------
 def _is_parenthesis(arg:  str) -> bool | None:
-    """Checks if the argument has parenthesis and they are around correctly.
+    """Checks if the argument has parenthesis and they are around.
+
+    correctly.
 
     True -> Parenthesise are and they are correct False -> No
     parenthesis None -> Incorrect parenthesis
@@ -125,7 +131,7 @@ def _is_parenthesis(arg:  str) -> bool | None:
 # ----------------------------------------------------------------------
 def _convert_pair(arg: str, keytype: ArgType, valuetype: ArgType
                   ) -> tuple[object, object] | tuple[None, list[str]]:
-    """Handles single key: value -pair"""
+    """Handles single key: value -pair."""
     errormessages = []
     keyarg = ''
     while (partitioning := arg.partition(':'))[1]:
@@ -179,7 +185,7 @@ def _dict(arg: str, keytype: ArgType, valuetype: ArgType, dictlike: type
     raise TypeConversionError('\n'.join(errormessages))
 # ----------------------------------------------------------------------
 def _generic_alias(arg: str, argtype: GenericAlias) -> Any:
-    """Handles GenericAlias types, like tuple[int]"""
+    """Handles GenericAlias types, like tuple[int]."""
     basetype = argtype.__origin__
     if issubclass(basetype, tuple):
         return _tuple(arg.split(','), argtype.__args__, basetype)
@@ -297,8 +303,10 @@ def _convert_parameter(arg: str, parameter: Parameter):
 # ----------------------------------------------------------------------
 def _convert_args(args: Sequence[str], function: FunctionType
                   ) -> ArgsKwargs:
-    """Parses command line arguments and convertes them according to the
-    function signature."""
+    """Parses command line arguments and convertes them according to the.
+
+    function signature.
+    """
     cli_args, cli_kwargs = _argumentsplit(args)
 
     function_signature = inspect.signature(function)
@@ -322,11 +330,11 @@ def _convert_args(args: Sequence[str], function: FunctionType
     converted_kwargs = {}
 
     for parameter_name, cli_arg in cli_kwargs.items():
-
+        parameter_name = parameter_name.replace('-', '_')
         parameter = parameters.pop(parameter_name, parameter_var_kw)
         converted_kwargs[parameter_name] = _convert_parameter(cli_arg,
                                                               parameter)
-        print(parameter_name, converted_kwargs[parameter_name])
+        # print(parameter_name, converted_kwargs[parameter_name])
     converted_args = [_convert_parameter(cli_arg, parameter)
                       for cli_arg, parameter
                       in zip(cli_args, chain(parameters.values(),
@@ -337,7 +345,10 @@ def _convert_args(args: Sequence[str], function: FunctionType
 def function_cli(args: list[str] = sys.argv[1:],
                  module: str | ModuleType = '__main__',
                  package: str = '') -> int:
-    """Functions as main able to run functions matching signature and generate
+    """Functions as main able to run functions matching signature and.
+
+    generate.
+
     helptext.
 
     Syntax
@@ -383,8 +394,11 @@ def function_cli(args: list[str] = sys.argv[1:],
     # Parsing the arguments
     converted_args, converted_kwargs = _convert_args(args[1:], function)
 
-    output = function(*converted_args, **converted_kwargs)
-
+    try:
+        output = function(*converted_args, **converted_kwargs)
+    except BaseException as exc:
+        print(f'{exc.__class__.__name__}: {exc}', file = sys.stderr)
+        return 1
     if isinstance(output, int):
         return output
 

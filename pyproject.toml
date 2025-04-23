@@ -36,10 +36,7 @@ dynamic = [
 ]
 
 [project.scripts]
-limedev = "limedev:main"
-package = "limedev.package:main"
-test = "limedev.test:main"
-readme = "limedev.readme:main"
+limedev = "limedev._cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Limespy/limedev"
@@ -70,10 +67,11 @@ tox = [
     "tox-uv >= 1.25.0",
 ]
 typing = [
-    "limedev[test-typing]",
+    "mypy >= 1.15",
+    "types-PyYAML",
 ]
 unittests = [
-    "limedev[test-unittests]",
+    "pytest >= 7.2.0",
 ]
 
 [tool.limedev]
@@ -83,6 +81,9 @@ full_name = "LimeDev"
 file = [
     "dependencies/requirements.txt",
 ]
+
+[tool.setuptools.dynamic.optional-dependencies.all]
+file = "dependencies/requirements_all.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.package]
 file = "dependencies/requirements_package.txt"
@@ -107,15 +108,6 @@ file = "dependencies/requirements_test-typing.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test-unittests]
 file = "dependencies/requirements_test-unittests.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.dev]
-file = "dependencies/requirements_dev.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.build]
-file = "dependencies/requirements_build.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.all]
-file = "dependencies/requirements_all.txt"
 
 [tool.setuptools.packages.find]
 where = [

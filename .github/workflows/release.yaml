@@ -18,9 +18,8 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: ./.github/actions/_build.yaml
+        uses: ./.github/actions/build
         with:
-          python-version: '3.13'
           packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
       - name: Publish
         uses: pypa/gh-action-pypi-publish@v1

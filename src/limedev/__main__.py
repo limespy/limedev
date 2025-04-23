@@ -1,2 +1,2 @@
-from ._API import main
+from ._cli import main
 raise SystemExit(main())

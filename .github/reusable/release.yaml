@@ -22,7 +22,7 @@ jobs:
         uses: Limespy/limedev/.github/actions/_build.yaml@v0
         with:
           python-version: ${{ inputs.python-version }}
-          packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
+          packaging-args: ${{ github.ref == 'refs/heads/main' && '--build' || '--build --build-number' }}
       - name: Publish
         uses: pypa/gh-action-pypi-publish@v1
         with:
