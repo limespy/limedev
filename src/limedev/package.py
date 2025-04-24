@@ -65,8 +65,7 @@ def construct_options(project_name: str,
 
     for option, suboption_tree in option_tree.items():
 
-        dependencies = {f'{project_name}[{req}]\n'
-                        for req in sorted(suboption_tree)}
+        dependencies = {f'{project_name}[{req}]\n' for req in suboption_tree}
 
         # Fill in the dependencies
         path = path_dependencies / f'{DEPENDENCIES_PREFIX}{option}.txt'
@@ -74,13 +73,14 @@ def construct_options(project_name: str,
         all_options[option] = path
 
         path.touch()
-
+        prefix = f'{project_name}[{option}'
         with open(path, 'r+') as file:
             dependencies.update(line for line in file.readlines()
-                                if line not in dependencies)
+                                if not (line in dependencies
+                                        or line.startswith(prefix)))
             file.seek(0)
             file.truncate()
-            file.writelines(dependencies)
+            file.writelines(sorted(dependencies))
 
         construct_options(project_name,
                           path_dependencies,
