@@ -1,0 +1,30 @@
+name: Build
+description: Build and publish python package
+
+inputs:
+  packaging-args:
+    description: Arguments for packaging
+    required: false
+    default: ''
+    type: string
+s
+runs:
+  using: 'composite'
+  steps:
+  - name: Python version
+    id: python-version
+    shell: bash
+    run: |
+      sed -nE 's/requires-python\s*=\s*"(.*)"/\1/p' pyproject.toml \
+      | sed --expression='s/^/version=/' \
+      >> "$GITHUB_OUTPUT"
+  - name: Install uv and Python ${{ steps.python-version.outputs.version }}
+    uses: astral-sh/setup-uv@v5
+    with:
+      python-version: ${{ steps.python-version.outputs.version }}
+  - name: Install dependencies
+    run: uv sync --no
+  - name: Run installer
+    run: python -m limeinstall build
+  - name: Build
+    run: limedev package ${{ inputs.packaging-args }}
