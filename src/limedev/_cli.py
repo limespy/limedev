@@ -2,7 +2,7 @@
 from importlib import import_module
 from typing import TYPE_CHECKING
 
-from .CLI import get_main
+from .cli import get_main
 # ======================================================================
 if TYPE_CHECKING:
     from collections.abc import Callable
