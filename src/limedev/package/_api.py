@@ -14,20 +14,26 @@ from typing import TYPE_CHECKING
 
 import tomli_w
 
-from ._aux import import_from_path
-from ._aux import PATH_PROJECT
-from ._aux import upsearch
+from limedev import import_from_path
+
+try:
+    from limedev import PATH_PROJECT
+except ImportError:
+    PATH_PROJECT = Path.cwd()
 
 try:
     import tomllib
 except ModuleNotFoundError:
     import tomli as tomllib
+
+
+
 # ======================================================================
 # Hinting types
 if TYPE_CHECKING:
     from typing import TypeAlias
     from collections.abc import Iterable
-    OptionTree: TypeAlias = dict[str, 'OptionTree' | str]
+    OptionTree: TypeAlias = dict[str, 'OptionTree']
 else:
     Iterable = tuple
     OptionTree = object
@@ -94,7 +100,8 @@ def package(build: bool = False,
 
     Builds README and the package
     """
-    if (path_pyproject := upsearch('pyproject.toml')) is None:
+    path_pyproject = PATH_PROJECT / 'pyproject.toml'
+    if not path_pyproject.exists():
         raise FileNotFoundError('pyproject.toml not found')
 
     path_readme = PATH_PROJECT / 'README.md'
@@ -163,9 +170,3 @@ def package(build: bool = False,
 
     path_readme.write_text(readme_text)
     return 0
-# ======================================================================
-if __name__ =='__main__':
-    from .CLI import get_main
-    from sys import argv
-
-    raise SystemExit(get_main(__name__)(['package'] + argv))

@@ -8,6 +8,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+    - name: Python version
+      id: min
+      shell: bash
+      run: |
+        echo "version=$(grep -Po 'requires-python\s*=\s*"[^\"]+"' \
+                          pyproject.toml \
+                        | grep -Po '>=\s*\K[0-9]+(\.[0-9]+)*' \
+                        | sort -V \
+                        | head -n1) \
+        >> "$GITHUB_OUTPUT"
+    - uses: snok/latest-python-versions@v1
+      id: max
+      with:
+        min-version: ${{ steps.min.outputs.version }}
+        include-prereleases: true
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -18,7 +33,19 @@ jobs:
     - name: Got versions ${{ steps.read-tox-ini.outputs.python-versions}}
       run: ''
     outputs:
-      python-versions: ${{ steps.read-tox-ini.outputs.python-versions }}
+      min: 
+        description: Minimum python version 
+        value: ${{ steps.min.outputs.version }}
+      max:
+        description: Maximum python version
+        value: ${{ steps.max.outputs.version }}
+      versions:
+        description: JSON formatted list with both or only the min
+        value: ${{ format('["{0}"{1}]',
+                          steps.min.outputs.version,
+                          steps.max.outputs.version
+                          && format(',"{0}"', steps.max.outputs.version)
+                          || '')}}
 
   tests:
     needs: python-versions
@@ -26,7 +53,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ${{ fromJson(needs.python-versions.outputs.python-versions) }}
+        python-version: ${{ fromJson(needs.python-versions.outputs.versions) }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4

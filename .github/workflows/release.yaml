@@ -18,10 +18,14 @@ jobs:
       id-token: write
     steps:
       - name: Build
-        uses: ./.github/actions/build
+        uses: lime-actions/build-py@latest
         with:
-          packaging-args: ${{ github.ref == 'refs/heads/main' && '' || '--build-number' }}
+          build: ${{ github.ref_name == github.event.repository.default_branch }}
+          build-number: ${{ github.ref_name == github.event.repository.default_branch }}
       - name: Publish
         uses: pypa/gh-action-pypi-publish@v1
         with:
-          repository-url: ${{ github.ref == 'refs/heads/main' && 'https://upload.pypi.org/legacy/' || 'https://test.pypi.org/legacy/' }}
+          repository-url: |
+            'https://${{ github.ref_name
+                         == github.event.repository.default_branch
+                         && "upload" || "test" }}.pypi.org/legacy/'
