@@ -16,6 +16,8 @@ jobs:
     - name: Python versions
       id: versions
       uses: lime-actions/python-version-range@latest
+      with:
+        include-prereleases: true
     outputs:
       range: ${{ steps.versions.outputs.limits }}
   tests:
