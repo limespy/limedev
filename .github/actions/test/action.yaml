@@ -13,6 +13,7 @@ runs:
     with:
       python-version-file: 'pyproject.toml'
   - name: Install and run the tests
+    shell: bash
     run: |
       echo "::group::Installing the package"
       uv sync --all-extras --no-default-groups --group unittests
