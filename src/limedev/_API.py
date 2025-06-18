@@ -1,12 +1,9 @@
 """Package API."""
 import pathlib
 
-from . import cli                   # noqa: F401
 from ._aux import import_from_path  # noqa: F401
 from ._aux import PATH_DEFAULT_CONFIGS
 from ._aux import PATH_PROJECT
-# ======================================================================
-CLI = cli
 # ======================================================================
 def install(path_repo: str | pathlib.Path = PATH_PROJECT, version: str = '3.12'
             ) -> int:
