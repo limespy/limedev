@@ -1,5 +1,5 @@
 name: Verify
-description: Runs tests and pre-build process
+run-name: Tests and pre-build
 
 on:
   push:
@@ -20,6 +20,6 @@ jobs:
       id-token: write
     steps:
     - name: Build
-      uses: lime-actions/build-py
+      uses: lime-actions/build-py@latest
       with:
         build: false
