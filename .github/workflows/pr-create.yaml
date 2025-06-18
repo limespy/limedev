@@ -19,6 +19,6 @@ jobs:
           pyproject.toml
         sparse-checkout-cone-mode: false
     - name: Create PR from ${{ github.ref_name }}
-      uses: lime-actions/pr-sync@latest
+      uses: lime-actions/pr-sync@latest-rc
       with:
         version-from: 'pyproject.toml'
