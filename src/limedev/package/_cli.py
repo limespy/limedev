@@ -4,7 +4,7 @@ from ..cli import get_main
 _main = get_main(_api.__name__)
 # ----------------------------------------------------------------------
 def main(args: list[str] | None = None) -> int:
-    
+
     if args is None:
         from sys import argv
         args = argv[1:]

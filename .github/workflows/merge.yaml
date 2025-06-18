@@ -55,4 +55,4 @@ jobs:
       with:
         mode: ${{ github.event.pull_request.base
                   == github.event.repository.default_branch
-                  && 'main' || 'test'
+                  && 'main' || 'test' }}

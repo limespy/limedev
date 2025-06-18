@@ -5,6 +5,7 @@ from enum import Enum
 from math import floor
 from math import log10
 from pathlib import Path
+from sys import version_info
 from timeit import timeit
 from typing import ParamSpec
 from typing import TYPE_CHECKING
@@ -15,8 +16,6 @@ from ._aux import PATH_PROJECT
 from ._aux import upsearch
 from ._aux import YAMLSafe
 from .cli import get_main
-
-from sys import version_info
 
 # ======================================================================
 # Hinting types
