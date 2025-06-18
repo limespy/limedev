@@ -1,5 +1,4 @@
 """Package internal cli."""
-from importlib import import_module
 from typing import TYPE_CHECKING
 
 from .cli import get_main
@@ -11,11 +10,14 @@ else:
 # ======================================================================
 def __getattr__(name: str) -> Callable[..., int]:
     if name == 'package':
-        return import_module('.package', __package__).package
+        from .package import package
+        return package # type: ignore[return-value]
     if name == 'readme':
-        return import_module('.readme', __package__).main
+        from .readme import main as _main
+        return _main
     if name in {'benchmarking', 'linting', 'profiling', 'typing', 'unittests'}:
-        return getattr(import_module('.test', __package__), name)
+        from . import test
+        return getattr(test, name)
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 # ======================================================================
