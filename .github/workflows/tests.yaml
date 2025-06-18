@@ -35,14 +35,7 @@ jobs:
           readme/
           src/
           tests/
+          .github/actions/test/action.yaml
         sparse-checkout-cone-mode: false
-    - name: Install uv
-      uses: astral-sh/setup-uv@v3
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version-file: 'pyproject.toml'
-    - name: Install and run the tests
-      run: |
-        uv tool install -e .[test-unittests]
-        uv tool run limedev unittests
+    - name: Run tests
+      uses: ./.github/actions/test

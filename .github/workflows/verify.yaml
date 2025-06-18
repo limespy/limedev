@@ -19,7 +19,15 @@ jobs:
     permissions:
       id-token: write
     steps:
-    - name: Build
-      uses: lime-actions/build-py@latest
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          pyproject.toml
+          src/
+          .github/actions/package/action.yaml
+        sparse-checkout-cone-mode: false
+    - name: Package
+      uses: ./.github/actions/package
       with:
         build: false
