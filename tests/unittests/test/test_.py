@@ -6,8 +6,15 @@ from limedev import test
 
 from .._aux import runcheck
 # ======================================================================
-
-SKIP_NO_DOT = pytest.mark.skipif(not run(('dot', '-V')).returncode,
+try:
+    run(('dot', '-V'))
+except FileNotFoundError:
+    IS_DOT = False
+else:
+    IS_DOT = True
+SKIP_IS_DOT = pytest.mark.skipif(IS_DOT,
+                                 reason = 'Graphviz dot available')
+SKIP_NO_DOT = pytest.mark.skipif(not IS_DOT,
                                  reason = 'Graphviz dot not available')
 # ======================================================================
 class Test_benchmarking:
@@ -35,19 +42,27 @@ class Test_profiling:
                  '--no_warmup',
                  '--missing_dot=IGNORE')
     # ------------------------------------------------------------------
+    @SKIP_NO_DOT
+    def test_missing_dot_base(self):
+        """Profiling handler."""
+        test.profiling(function = 'empty',
+                       no_warmup = True,
+                       missing_dot = test.MissingDot.ERROR)
+    # ------------------------------------------------------------------
     def test_warmup(self):
         """Profiling handler."""
         test.profiling(function = 'empty',
                        no_warmup = False,
                        missing_dot = test.MissingDot.IGNORE)
     # ------------------------------------------------------------------
+    @SKIP_IS_DOT
     def test_missing_dot_IGNORE(self):
         """Profiling handler."""
         test.profiling(function = 'empty',
                        no_warmup = True,
                        missing_dot = test.MissingDot.IGNORE)
     # ------------------------------------------------------------------
-    @SKIP_NO_DOT
+    @SKIP_IS_DOT
     def test_missing_dot_ERROR(self):
         """Profiling handler."""
         with pytest.raises(RuntimeError):
@@ -55,7 +70,7 @@ class Test_profiling:
                            no_warmup = True,
                            missing_dot = test.MissingDot.ERROR)
     # ------------------------------------------------------------------
-    @SKIP_NO_DOT
+    @SKIP_IS_DOT
     def test_missing_dot_WARN(self):
         """Profiling handler."""
         with pytest.warns(RuntimeWarning):
