@@ -47,7 +47,8 @@ Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 dev = [
     "pre-commit >= 3.2.2,<4",
     { include-group = "benchmarking" },
-    { include-group = "build" },
+    { include-group = "linting" },
+    { include-group = "packaging" },
     { include-group = "profiling" },
     { include-group = "tox" },
     { include-group = "typing" },
@@ -56,8 +57,12 @@ dev = [
 benchmarking = [
     "limedev[test-benchmarking]",
 ]
-build = [
-    "limedev[package]",
+
+linting = [
+    "limedev[test-linting]",
+]
+packaging = [
+    "limedev[readme]",
 ]
 profiling = [
     "limedev[test-profiling]",

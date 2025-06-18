@@ -1,0 +1,27 @@
+name: Test
+description: Run unittests
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Install uv
+    uses: astral-sh/setup-uv@v6
+    with:
+      enable-cache: true
+  - name: Set up Python
+    uses: actions/setup-python@v5
+    with:
+      python-version-file: 'pyproject.toml'
+  - name: Install and run the tests
+    run: |
+      echo "::group::Installing the package"
+      uv sync --all-extras --no-default-groups --group unittests
+      echo "::endgroup::"
+
+      echo "::group::Installing tester"
+      uv pip install limedev[test-unittests]
+      echo "::endgroup::"
+
+      echo "::group::Running tests"
+      limedev unittests
+      echo "::endgroup::"

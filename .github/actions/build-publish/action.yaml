@@ -15,7 +15,7 @@ runs:
   using: 'composite'
   steps:
   - name: Build
-    uses: lime-actions/build-py@latest
+    uses: ./.github/actions/package
     with:
       build: true
       build-number: ${{ inputs.mode == 'test' }}
