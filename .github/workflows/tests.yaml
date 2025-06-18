@@ -39,3 +39,5 @@ jobs:
         sparse-checkout-cone-mode: false
     - name: Run tests
       uses: ./.github/actions/test
+      with:
+        python-version: ${{ matrix.python-version }}
