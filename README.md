@@ -38,7 +38,7 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.7.0 2025-04-24 <!-- omit in toc -->
+## 0.7.0 2025-06-18 <!-- omit in toc -->
 
 - Testing toolkit updated
 

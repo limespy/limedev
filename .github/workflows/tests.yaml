@@ -8,60 +8,41 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-    - name: Python version
-      id: min
-      shell: bash
-      run: |
-        echo "version=$(grep -Po 'requires-python\s*=\s*"[^\"]+"' \
-                          pyproject.toml \
-                        | grep -Po '>=\s*\K[0-9]+(\.[0-9]+)*' \
-                        | sort -V \
-                        | head -n1) \
-        >> "$GITHUB_OUTPUT"
-    - uses: snok/latest-python-versions@v1
-      id: max
-      with:
-        min-version: ${{ steps.min.outputs.version }}
-        include-prereleases: true
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '>=3.12'
-    - name: Read tox.ini
-      id: read-tox-ini
-      run: python -c "import configparser; config = configparser.ConfigParser(); config.read('tox.ini'); print(f'python-versions=[{', '.join([f'\"{s.partition(':')[0]}\"' for s in config['gh-actions']['python'].split('\n') if s])}]', end = '')" >> "$GITHUB_OUTPUT"
-    - name: Got versions ${{ steps.read-tox-ini.outputs.python-versions}}
-      run: ''
+      sparse-checkout: |
+        pyproject.toml
+        tox.ini
+      sparse-checkout-cone-mode: false
+    - name: Python versions
+      id: versions
+      uses: lime-actions/python-version-range@latest
     outputs:
-      min: 
-        description: Minimum python version 
-        value: ${{ steps.min.outputs.version }}
-      max:
-        description: Maximum python version
-        value: ${{ steps.max.outputs.version }}
-      versions:
-        description: JSON formatted list with both or only the min
-        value: ${{ format('["{0}"{1}]',
-                          steps.min.outputs.version,
-                          steps.max.outputs.version
-                          && format(',"{0}"', steps.max.outputs.version)
-                          || '')}}
-
+      range:
+        description: Version upper and lower values in JSON list format
+        value: ${{ steps.versions.outputs.limits }}
   tests:
     needs: python-versions
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
-        python-version: ${{ fromJson(needs.python-versions.outputs.versions) }}
+        python-version: ${{ fromJson(needs.python-versions.outputs.range) }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      sparse-checkout: |
+        dependencies/
+        pyproject.toml
+        readme/
+        src/
+        tests/
+      sparse-checkout-cone-mode: false
     - name: Install uv
       uses: astral-sh/setup-uv@v3
-    - name: Install Python ${{ matrix.python-version }}
-      run: uv python install ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: uv tool install tox --with tox-gh-actions --with tox-uv
-    - name: Test with tox
-      run: uvx tox
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: 'pyproject.toml'
+    - name: Install and run the tests
+      run: |
+        uv tool install -e .[test-unittests]
+        uv tool run limedev unittests

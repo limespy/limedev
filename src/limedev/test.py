@@ -14,7 +14,9 @@ from ._aux import PATH_DEFAULT_CONFIGS
 from ._aux import PATH_PROJECT
 from ._aux import upsearch
 from ._aux import YAMLSafe
-from .CLI import get_main
+from .cli import get_main
+
+from sys import version_info
 
 # ======================================================================
 # Hinting types
@@ -45,6 +47,17 @@ def _try_get_path(path_project: Path, patterns: Iterable[str]
 # ----------------------------------------------------------------------
 PATH_TESTS = _try_get_path(PATH_PROJECT, ('tests', 'test'))
 PATH_SRC = _try_get_path(PATH_PROJECT, ('src', 'source')) or PATH_PROJECT
+PATH_VERSION_DEFAULTS = (PATH_DEFAULT_CONFIGS
+                         / f'{version_info[0]}.{version_info[1]}')
+PATH_FALLBACK_DEFAULTS = (PATH_DEFAULT_CONFIGS / 'fallback')
+#%%=====================================================================
+def _get_default_config(patterns) -> Path | None:
+    return (path if (path := upsearch(patterns,
+                                      path_search = PATH_VERSION_DEFAULTS,
+                                      path_stop = PATH_VERSION_DEFAULTS))
+            else upsearch(patterns,
+                          path_search = PATH_FALLBACK_DEFAULTS,
+                          path_stop = PATH_FALLBACK_DEFAULTS))
 #%%=====================================================================
 def _get_path_config(patterns: str | Iterable[str],
                      path_start: Path | None = PATH_TESTS
@@ -55,9 +68,9 @@ def _get_path_config(patterns: str | Iterable[str],
     """
     if path_start:
         if _path_config := upsearch(patterns, path_start,
-        path_stop = PATH_PROJECT):
+                                    path_stop = PATH_PROJECT):
             return _path_config
-    return upsearch(patterns, PATH_DEFAULT_CONFIGS)
+    return _get_default_config(patterns)
 # ======================================================================
 def _pack_kwargs(kwargs: dict[str, str]) -> Generator[str, None, None]:
 
@@ -127,7 +140,7 @@ def typing(path_src: Path = PATH_SRC,
 # ======================================================================
 def linting(path_source: Path | None = PATH_SRC,
             *,
-            config: str = str(_get_path_config('ruff.toml')),
+            config: Path | None = _get_path_config('ruff.toml'),
             **kwargs: str
             ) -> int:
     """Starts pylin linter."""
@@ -136,9 +149,8 @@ def linting(path_source: Path | None = PATH_SRC,
     import sys
     from ruff.__main__ import find_ruff_bin
 
-    print(config)
-
-    kwargs = {'config': config} | kwargs
+    if config:
+        kwargs = {'config': str(config) } | kwargs
 
     ruff = os.fsdecode(find_ruff_bin())
     path_source_str = str(path_source)

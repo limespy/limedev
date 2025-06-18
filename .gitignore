@@ -17,6 +17,7 @@ sandbox*
 # Python
 
 __pycache__
+build
 
 ## Distribution / packaging
 

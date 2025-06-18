@@ -19,5 +19,7 @@ jobs:
     permissions:
       id-token: write
     steps:
-      - name: Build
-        uses: ./.github/actions/_build.yaml
+    - name: Build
+      uses: lime-actions/build-py
+      with:
+        build: false
