@@ -31,5 +31,5 @@ runs:
       echo "::endgroup::"
 
       echo "::group::Running tests"
-      limedev unittests
+      .venv/bin/limedev unittests
       echo "::endgroup::"
