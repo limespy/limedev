@@ -1,0 +1,4 @@
+target-version = "py312"
+line-length = 80
+[format]
+quote-style = "single"
