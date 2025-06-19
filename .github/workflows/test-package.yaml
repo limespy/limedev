@@ -32,9 +32,11 @@ jobs:
       uses: actions/checkout@v4
       with:
         sparse-checkout: |
-          pyproject.toml
-          src/
           .github/actions/package/action.yaml
+          pyproject.toml
+          dependencies/
+          readme/
+          src/
         sparse-checkout-cone-mode: false
     - name: Package
       uses: ./.github/actions/package

@@ -67,12 +67,12 @@ jobs:
       uses: actions/checkout@v4
       with:
         sparse-checkout: |
-          dependencies/
+          .github/actions/test/action.yaml
           pyproject.toml
+          dependencies/
           readme/
           src/
           tests/
-          .github/actions/test/action.yaml
         sparse-checkout-cone-mode: false
     - name: Run tests
       uses: ./.github/actions/test

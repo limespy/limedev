@@ -60,7 +60,7 @@ linting = [
     "limedev[test-linting]",
 ]
 packaging = [
-    "limedev[readme,package]",
+    "limedev[readme]",
 ]
 profiling = [
     "limedev[test-profiling]",
