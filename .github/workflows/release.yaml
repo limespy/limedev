@@ -1,0 +1,44 @@
+name: Release
+run-name: Creating release from ${{ github.ref_name }}
+on:
+  pull_request:
+    types:
+    - closed
+    - ready_for_review
+    - synchronize
+    branches:
+    - 'main'
+    paths:
+    - 'pyproject.toml'
+
+jobs:
+  release:
+    if: github.event.action == 'ready_for_review'
+        || github.event.action == 'closed'
+        && github.event.pull_request.merged
+        || github.event.action == 'synchronize'
+        && !github.event.pull_request.draft
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        sparse-checkout: |
+          pyproject.toml
+          .github/actions/build-publish/action.yaml
+        sparse-checkout-cone-mode: false
+    - name: GH Release
+      uses: lime-actions/gh-release@latest
+      with:
+        message: ${{ github.event.action != 'closed'
+                     && 'Release candidate' || '' }}
+        release-candidate: ${{ github.event.action != 'closed' }}
+        version-from: 'pyproject.toml'
+    - name: Build and publish
+      uses: ./.github/actions/build-publish
+      with:
+        mode: ${{ github.event.action == 'closed' && 'main' || 'test' }}
