@@ -15,6 +15,7 @@ jobs:
   tests:
     uses: ./.github/workflows/test-functional.yaml
   release:
+    needs: tests
     if: github.event.action == 'ready_for_review'
         || github.event.action == 'closed'
         && github.event.pull_request.merged
