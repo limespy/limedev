@@ -53,9 +53,9 @@ runs:
       echo "::endgroup::"
 
   - name: Unsupported OS
-    if: runner.os != Windows
-        && runner.os != Linux
-        && runner.os != macOS
+    if: runner.os != 'Windows'
+        && runner.os != 'Linux'
+        && runner.os != 'macOS'
     shell: bash
     run: |
       echo "$RUNNER_OS"
