@@ -33,8 +33,6 @@ runs:
       uv sync --no-default-groups --group packaging
       echo "::endgroup::"
 
-      . ./.venv/bin/activate
-
       echo "::group::Installing the packager"
       uv pip install .[package]
       echo "::endgroup::"
