@@ -1,6 +1,26 @@
 name: Functional tests
 
-on: workflow_call
+on:
+  push:
+    branches-ignore:
+      - main
+      - release-candidate
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - tests/*
+      - .github/workflows/test-functional.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - tests/*
+      - .github/workflows/test-functional.yaml
+  workflow_call:
 
 jobs:
   python-versions:
