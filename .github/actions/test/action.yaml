@@ -43,7 +43,7 @@ runs:
 
   - name: Run tests | Linux & MacOS
     if: runner.os == 'Linux' || runner.os == 'macOS'
-    shell: powershell
+    shell: bash
       . ./.venv/bin/activate
 
       echo "::group::Running tests"
@@ -54,6 +54,7 @@ runs:
     if: runner.os != Windows
         && runner.os != Linux
         && runner.os != macOS
+    shell: bash
     run: |
       echo "$RUNNER_OS"
       exit 101
