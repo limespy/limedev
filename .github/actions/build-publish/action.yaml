@@ -20,7 +20,7 @@ runs:
       build: true
       build-number: ${{ inputs.mode == 'test' }}
   - name: Publish
-    uses: pypa/gh-action-pypi-publish@v1
+    uses: pypa/gh-action-pypi-publish@v1.12.4
     with:
       repository-url: |
         'https://${{ inputs.mode == 'test' && 'test' || 'upload'
