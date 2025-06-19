@@ -17,8 +17,10 @@ runs:
   - name: Set up Python
     uses: actions/setup-python@v5
     with:
+      allow-prereleases: True
       python-version: ${{ inputs.python-version }}
       python-version-file: ${{ !inputs.python-version && 'pyproject.toml' || '' }}
+
   - name: Install and run the tests
     shell: bash
     run: |
@@ -30,6 +32,8 @@ runs:
       uv pip install limedev[test-unittests]
       echo "::endgroup::"
 
+      . ./.venv/bin/activate unittests
+
       echo "::group::Running tests"
-      .venv/bin/limedev unittests
+      limedev unittests
       echo "::endgroup::"
