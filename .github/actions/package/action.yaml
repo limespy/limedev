@@ -9,7 +9,7 @@ inputs:
   build-number:
     description: Whether to append a build number
     required: false
-    default: 'true'
+    default: 'false'
   release-candidate:
     description: What release candidate number to append.
     required: false
