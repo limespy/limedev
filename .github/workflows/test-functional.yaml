@@ -1,4 +1,5 @@
 name: Functional tests
+run-name: Functional tests
 
 on:
   push:
