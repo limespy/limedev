@@ -30,6 +30,7 @@ jobs:
         sparse-checkout: |
           pyproject.toml
           .github/actions/build-publish/action.yaml
+          .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
     - name: GH Release
       uses: lime-actions/gh-release@latest
