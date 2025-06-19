@@ -1,7 +1,5 @@
-gprof2dot >= 2022.7.29
-mypy >= 1.14.0
-pytest >=7.2.0
-pytest-cov >= 4.0.0
-pyyaml >= 6.0
-ruff >= 0.9.1
-types-PyYAML >= 6.0
+limedev[test-benchmarking]
+limedev[test-linting]
+limedev[test-profiling]
+limedev[test-typing]
+limedev[test-unittests]

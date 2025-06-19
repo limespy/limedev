@@ -1,0 +1,27 @@
+name: Build and publish
+description: Builds and publishes the package
+
+inputs:
+  mode:
+    description: What kind of release to perform
+    required: true
+    type: choice
+    options:
+    - 'main'
+    - 'RC'
+    - 'test'
+
+runs:
+  using: 'composite'
+  steps:
+  - name: Build
+    uses: ./.github/actions/package
+    with:
+      build: true
+      build-number: ${{ inputs.mode == 'test' }}
+  - name: Publish
+    uses: pypa/gh-action-pypi-publish@v1
+    with:
+      repository-url: |
+        'https://${{ inputs.mode == 'test' && 'test' || 'upload'
+                     }}.pypi.org/legacy/'

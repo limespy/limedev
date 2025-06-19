@@ -1,8 +1,12 @@
+# General
 .*
+!.gitignore
 !.github
-!.pylintrc
+!.gitmodules
 
-# Utilities
+!.pre-commit-config.yaml
+
+# Sandbox
 sandbox*
 
 # CAD
@@ -11,9 +15,16 @@ sandbox*
 *.x3g
 
 # Python
-__pycache__
 
-# Distribution / packaging
+__pycache__
+build
+
+## Distribution / packaging
+
 *.egg-info
 dist/
-build/
+# build/
+
+## UV
+
+uv.lock

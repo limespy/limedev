@@ -9,39 +9,73 @@ name = "limedev"
 description = "Toolkit for Python development, especially packaging "
 classifiers = [
     "Development Status :: 3 - Alpha",
-    "Development Status :: 3 - Alpha",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: Unix",
-    "Operating System :: POSIX",
     "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 authors = [
     { name = "Limespy" },
 ]
+license = "MIT"
+license-files = [
+    "LICENSE.txt",
+]
 requires-python = ">=3.10"
 readme = "README.md"
-version = "0.6.2"
+version = "0.7.0"
 dynamic = [
     "dependencies",
     "optional-dependencies",
 ]
 
 [project.scripts]
-limedev = "limedev:main"
-package = "limedev.package:main"
-test = "limedev.test:main"
-readme = "limedev.readme:main"
+limedev = "limedev._cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Limespy/limedev"
 Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
 "Issue Tracker" = "https://github.com/Limespy/limedev/issues"
+
+[dependency-groups]
+dev = [
+    "pre-commit >= 3.2.2,<4",
+    { include-group = "benchmarking" },
+    { include-group = "linting" },
+    { include-group = "packaging" },
+    { include-group = "profiling" },
+    { include-group = "tox" },
+    { include-group = "typing" },
+    { include-group = "unittests" },
+]
+benchmarking = [
+    "limedev[test-benchmarking]",
+]
+linting = [
+    "limedev[test-linting]",
+]
+packaging = [
+    "limedev[readme]",
+]
+profiling = [
+    "limedev[test-profiling]",
+]
+tox = [
+    "tox >= 4.22",
+    "tox-uv >= 1.25.0",
+]
+typing = [
+    "mypy >= 1.15",
+    "types-PyYAML",
+]
+unittests = [
+    "pytest >= 7.2.0",
+]
 
 [tool.limedev]
 full_name = "LimeDev"
@@ -51,11 +85,8 @@ file = [
     "dependencies/requirements.txt",
 ]
 
-[tool.setuptools.dynamic.optional-dependencies.dev]
-file = "dependencies/requirements_dev.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.build]
-file = "dependencies/requirements_build.txt"
+[tool.setuptools.dynamic.optional-dependencies.all]
+file = "dependencies/requirements_all.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.package]
 file = "dependencies/requirements_package.txt"
@@ -65,6 +96,21 @@ file = "dependencies/requirements_readme.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.test]
 file = "dependencies/requirements_test.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-benchmarking]
+file = "dependencies/requirements_test-benchmarking.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-linting]
+file = "dependencies/requirements_test-linting.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-profiling]
+file = "dependencies/requirements_test-profiling.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-typing]
+file = "dependencies/requirements_test-typing.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.test-unittests]
+file = "dependencies/requirements_test-unittests.txt"
 
 [tool.setuptools.packages.find]
 where = [

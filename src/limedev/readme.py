@@ -1,27 +1,79 @@
 """For generating readme.md file."""
 import datetime
-import pathlib
 import re
+from pathlib import Path
 from typing import Any
-from typing import Iterable
-from typing import TypeAlias
+from typing import TYPE_CHECKING
 
 import yamdog as md
 
 from ._aux import import_from_path
-from ._aux import PATH_REPO
+from ._aux import PATH_PROJECT
 from ._aux import upsearch
 #=======================================================================
-_PyprojectDataType: TypeAlias = (str
-                                | dict[str, '_PyprojectDataType']
-                                | list['_PyprojectDataType'])
+# Hinting types
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from typing import Any
+    from typing import NotRequired
+    from typing import TypeAlias
+    from typing import TypedDict
 
-PyprojectType: TypeAlias = dict[str, _PyprojectDataType]
+    _TOMLElemental: TypeAlias = str | bool | float | int
+
+    TOMLValue: TypeAlias = (_TOMLElemental |
+                            list['TOMLValue'] |
+                            dict[str, 'TOMLValue'])
+
+    BuildSystemInfo = TypedDict('BuildSystemInfo',
+                                {'requires': list[str],
+                                 'build-backend': str})
+
+    class AuthorInfo(TypedDict):
+        name: str
+        email: NotRequired[str]
+
+    _Urls = TypedDict('_Urls',
+                     {'Homepage': str,
+                      'Changelog': NotRequired[str],
+                      'Issure Tracker': NotRequired[str]})
+
+    _PyprojectProject = TypedDict('_PyprojectProject',
+        {
+         'authors': list[AuthorInfo],
+         'maintainers': list[AuthorInfo],
+         'classifiers': list[str],
+         'description': str,
+         'name': str,
+         'readme': str,
+         'requires-python': str,
+         'version': str,
+
+         'dependencies': NotRequired[list[str]],
+         'optional-dependencies': NotRequired[dict[str, list[str]]],
+         'dynamic': NotRequired[list[str]],
+         'license': NotRequired[str],
+         'license-files': NotRequired[list[str]],
+         'scripts': NotRequired[dict[str, str]],
+         'urls': _Urls})
+
+    Pyproject = TypedDict('Pyproject',
+                          {'build-system': BuildSystemInfo,
+                           'project': _PyprojectProject,
+                           'tool': dict[str, dict[str, TOMLValue]]})
+else:
+    Pyproject = object
+    Iterable = tuple
+# ----------------------------------------------------------------------
 re_heading = re.compile(r'^#* .*$')
 # ----------------------------------------------------------------------
 def parse_md_element(text: str):
-    """Very simple parser able to parse part of markdown syntax into YAMDOG
-    objects."""
+    """Very simple parser able to parse part of markdown syntax into.
+
+    YAMDOG.
+
+    objects.
+    """
     if match := re_heading.match(text):
         hashes, content = match[0].split(' ', 1)
         return md.Heading(content, len(hashes))
@@ -82,7 +134,7 @@ def make_setup_guide(name: str,
         doc += md.CodeBlock(f'import {package_name} as {abbreviation}', 'python')
     return doc
 #=======================================================================
-def make_changelog(level: int, path_changelog: pathlib.Path, version: str
+def make_changelog(level: int, path_changelog: Path, version: str
                    ) -> md.Document:
     """Loads changelog and reformats it for README document."""
     doc = md.Document([md.Heading('Changelog', level, in_TOC = False)])
@@ -91,7 +143,7 @@ def make_changelog(level: int, path_changelog: pathlib.Path, version: str
         if (latest := changelog.content[0]).content.split(' ', 1)[0] == version:
             latest.content = f'{version} {datetime.date.today().isoformat()}'
         else:
-            raise ValueError('Changelog not up to date')
+            raise ValueError(f'Changelog not up to date. Version {version} Latest: {latest}')
 
         # Updating the changelog file
         path_changelog.write_text(str(changelog) + '\n')
@@ -137,7 +189,7 @@ def make(package,
     if readme_body is not None:
         doc += readme_body
     if (path_changelog := upsearch('*changelog.md',
-                                    pathlib.Path(package.__file__).parent,
+                                    Path(package.__file__).parent,
                                     deep = True)) is None:
         raise FileNotFoundError('Changelog not found')
 
@@ -154,10 +206,10 @@ def main() -> int:
     except ModuleNotFoundError:
         import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
 
-    pyproject: PyprojectType = tomllib.loads((PATH_REPO / 'pyproject.toml'
-                                              ).read_text())
-    (PATH_REPO / 'README.md'
-     ).write_text(str(import_from_path(PATH_REPO / 'readme' / 'readme.py'
+    pyproject: Pyproject = tomllib.loads(( # type: ignore[assignment]
+        PATH_PROJECT / 'pyproject.toml').read_text())
+    (PATH_PROJECT / 'README.md'
+     ).write_text(str(import_from_path(PATH_PROJECT / 'readme' / 'readme.py'
                                        ).main(pyproject))
                   + '\n')
     return 0
