@@ -1,5 +1,5 @@
-name: Verify
-run-name: Tests and pre-build
+name: Packaging test
+run-name: Packaging test
 
 on:
   push:
