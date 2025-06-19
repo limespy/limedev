@@ -12,6 +12,8 @@ on:
     - 'pyproject.toml'
 
 jobs:
+  tests:
+    uses: ./.github/workflows/test-functional.yaml
   release:
     if: github.event.action == 'ready_for_review'
         || github.event.action == 'closed'
@@ -28,7 +30,12 @@ jobs:
         fetch-depth: 0
         fetch-tags: true
         sparse-checkout: |
+          LICENSE.txt
           pyproject.toml
+          README.md
+          dependencies/
+          readme/
+          src/
           .github/actions/build-publish/action.yaml
           .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
