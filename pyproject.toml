@@ -54,16 +54,16 @@ dev = [
     { include-group = "unittests" },
 ]
 benchmarking = [
-    "limedev[test-benchmarking]",
+    ".[test-benchmarking]",
 ]
 linting = [
-    "limedev[test-linting]",
+    ".[test-linting]",
 ]
 packaging = [
-    "limedev[readme,package]",
+    ".[readme,package]",
 ]
 profiling = [
-    "limedev[test-profiling]",
+    ".[test-profiling]",
 ]
 tox = [
     "tox >= 4.22",
