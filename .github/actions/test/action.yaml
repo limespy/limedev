@@ -32,8 +32,28 @@ runs:
       uv pip install limedev[test-unittests]
       echo "::endgroup::"
 
-      . ./.venv/bin/activate unittests
+  - name: Run tests | Windows
+    if: runner.os == 'Windows'
+    shell: powershell
+      .\.venv\Scripts\activate.ps1
 
       echo "::group::Running tests"
       limedev unittests
       echo "::endgroup::"
+
+  - name: Run tests | Linux & MacOS
+    if: runner.os == 'Linux' || runner.os == 'macOS'
+    shell: powershell
+      . ./.venv/bin/activate
+
+      echo "::group::Running tests"
+      limedev unittests
+      echo "::endgroup::"
+
+  - name: Unsupported OS
+    if: runner.os != Windows
+        && runner.os != Linux
+        && runner.os != macOS
+    run: |
+      echo "$RUNNER_OS"
+      exit 101
