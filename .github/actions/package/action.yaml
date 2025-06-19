@@ -30,7 +30,7 @@ runs:
     shell: bash
     run: |
       echo "::group::Installing the package"
-      uv sync --no-default-groups --group packaging
+      uv sync --no-default-groups --group packaging --extra package --extra readme
       echo "::endgroup::"
 
       . ./.venv/bin/activate
