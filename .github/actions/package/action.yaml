@@ -37,6 +37,7 @@ runs:
       uv pip install .[package]
       echo "::endgroup::"
 
+      . ./.venv/bin/activate
 
       echo "::group::Packaging"
       limedev package \
