@@ -38,9 +38,9 @@ dynamic = [
 limedev = "limedev._cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Limespy/limedev"
-Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
-"Issue Tracker" = "https://github.com/Limespy/limedev/issues"
+Homepage = "https://github.com/limespy/limedev"
+Changelog = "https://github.com/limespy/limedev/blob/main/README.md#Changelog"
+"Issue Tracker" = "https://github.com/limespy/limedev/issues"
 
 [dependency-groups]
 dev = [
