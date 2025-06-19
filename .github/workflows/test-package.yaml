@@ -1,0 +1,44 @@
+name: Packaging test
+run-name: Packaging test
+
+on:
+  push:
+    branches-ignore:
+      - main
+      - release-candidate
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - .github/workflows/test-packaging.yaml
+      - .github/actions/package/action.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - .github/workflows/test-packaging.yaml
+      - .github/actions/package/action.yaml
+
+jobs:
+  packaging:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          .github/actions/package/action.yaml
+          pyproject.toml
+          dependencies/
+          readme/
+          src/
+        sparse-checkout-cone-mode: false
+    - name: Package
+      uses: ./.github/actions/package
+      with:
+        build: false

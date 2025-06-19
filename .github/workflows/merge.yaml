@@ -1,0 +1,60 @@
+name: Merge
+run-name: Merging ${{ github.event.pull_request.head.ref }} -> ${{ github.event.pull_request.base.ref }}
+
+on:
+  pull_request_review:
+    types:
+    - submitted
+
+jobs:
+  tests:
+    uses: ./.github/workflows/test-functional.yaml
+  merge:
+    needs: tests
+    if: ${{ github.event.review.state == 'approved' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        sparse-checkout: |
+          pyproject.toml
+          .github/actions/build-publish/action.yaml
+          .github/actions/package/action.yaml
+          .github/actions/test/action.yaml
+        sparse-checkout-cone-mode: false
+    - name: Merge
+      uses: lime-actions/merge@latest
+      with:
+        version-from: 'pyproject.toml'
+    - name: Merge back
+      if: github.event.pull_request.base.ref
+          == github.event.repository.default_branch
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email "github-actions@users.noreply.github.com"
+
+        git fetch
+
+        git checkout release-candidate
+        git merge origin/${{ github.event.pull_request.base.ref }} -X ours
+        git push
+
+        git checkout dev
+        git merge origin/release-candidate
+        git push
+    - name: Build and publish
+      if: ${{ github.event.pull_request.base
+              == github.event.repository.default_branch
+              || github.event.pull_request.base
+              == 'release-candidate' }}
+      uses: ./.github/actions/build-publish
+      with:
+        mode: ${{ github.event.pull_request.base
+                  == github.event.repository.default_branch
+                  && 'main' || 'test' }}

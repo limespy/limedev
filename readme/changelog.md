@@ -1,3 +1,7 @@
+# 0.7.0 2025-06-19
+
+- Testing toolkit updated
+
 # 0.6.2 2025-01-14
 
 - Changed signature of the benchmarking function

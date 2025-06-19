@@ -2,7 +2,7 @@
 import limedev
 from limedev import readme
 #=======================================================================
-def main(pyproject: readme.PyprojectType):
+def main(pyproject: readme.Pyproject):
     """This gets called by the limedev."""
 
     name = pyproject['tool']['limedev']['full_name']
