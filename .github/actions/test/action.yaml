@@ -35,6 +35,7 @@ runs:
   - name: Run tests | Windows
     if: runner.os == 'Windows'
     shell: powershell
+    run: |
       .\.venv\Scripts\activate.ps1
 
       echo "::group::Running tests"
@@ -44,6 +45,7 @@ runs:
   - name: Run tests | Linux & MacOS
     if: runner.os == 'Linux' || runner.os == 'macOS'
     shell: bash
+    run: |
       . ./.venv/bin/activate
 
       echo "::group::Running tests"
