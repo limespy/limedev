@@ -23,10 +23,14 @@ jobs:
         fetch-depth: 0
         fetch-tags: true
         sparse-checkout: |
+          LICENSE.txt
           pyproject.toml
+          README.md
+          dependencies/
+          readme/
+          src/
           .github/actions/build-publish/action.yaml
           .github/actions/package/action.yaml
-          .github/actions/test/action.yaml
         sparse-checkout-cone-mode: false
     - name: Merge
       uses: lime-actions/merge@latest
@@ -49,12 +53,12 @@ jobs:
         git merge origin/release-candidate
         git push
     - name: Build and publish
-      if: ${{ github.event.pull_request.base
-              == github.event.repository.default_branch
-              || github.event.pull_request.base
-              == 'release-candidate' }}
+      if: github.event.pull_request.base.ref
+          == github.event.repository.default_branch
+          || github.event.pull_request.base.ref
+          == 'release-candidate'
       uses: ./.github/actions/build-publish
       with:
-        mode: ${{ github.event.pull_request.base
+        mode: ${{ github.event.pull_request.base.ref
                   == github.event.repository.default_branch
                   && 'main' || 'test' }}
