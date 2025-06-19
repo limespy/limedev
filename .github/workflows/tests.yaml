@@ -37,7 +37,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version:
           - ${{ needs.python-versions.outputs.max }}
           - ${{ needs.python-versions.outputs.min }}
