@@ -42,7 +42,7 @@ runs:
       echo "::group::Packaging"
       limedev package
         ${{ inputs.build == 'true' && '--build' || '' }}
-        ${{ inputs.build-number != 'true' && '--build-number' || '' }}
+        ${{ inputs.build-number == 'true' && '--build-number' || '' }}
         ${{ inputs.release-candidate
             && format('--release-candidate={0}', inputs.release-candidate)
             || ''}}
