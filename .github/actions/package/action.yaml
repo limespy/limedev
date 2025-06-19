@@ -1,5 +1,5 @@
-name: Build
-description: Build and publish python package
+name: Package
+description: Run the packaging
 
 inputs:
   build:
