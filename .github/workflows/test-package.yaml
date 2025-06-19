@@ -6,15 +6,24 @@ on:
     branches-ignore:
       - main
       - release-candidate
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - .github/workflows/test-packaging.yaml
+      - .github/actions/package/action.yaml
   pull_request:
     branches:
       - main
+    paths:
+      - pyproject.toml
+      - src/*
+      - readme/*
+      - .github/workflows/test-packaging.yaml
+      - .github/actions/package/action.yaml
 
 jobs:
-  functional:
-    uses: ./.github/workflows/tests.yaml
   packaging:
-    needs: functional
     runs-on: ubuntu-latest
     permissions:
       id-token: write
