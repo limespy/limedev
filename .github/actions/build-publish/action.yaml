@@ -19,6 +19,11 @@ runs:
     with:
       build: true
       build-number: ${{ inputs.mode == 'test' }}
+  - name: debug
+    shell: bash
+    run:
+      echo "$ACTION_REPO"
+      echo "$ACTION_REF"
   - name: Publish
     uses: pypa/gh-action-pypi-publish@v1.12.4
     with:
