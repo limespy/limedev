@@ -28,7 +28,7 @@ license-files = [
 ]
 requires-python = ">=3.10"
 readme = "README.md"
-version = "0.7.0"
+version = "0.7.1"
 dynamic = [
     "dependencies",
     "optional-dependencies",
@@ -38,9 +38,9 @@ dynamic = [
 limedev = "limedev._cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Limespy/limedev"
-Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
-"Issue Tracker" = "https://github.com/Limespy/limedev/issues"
+Homepage = "https://github.com/limespy/limedev"
+Changelog = "https://github.com/limespy/limedev/blob/main/README.md#Changelog"
+"Issue Tracker" = "https://github.com/limespy/limedev/issues"
 
 [dependency-groups]
 dev = [
@@ -70,11 +70,11 @@ tox = [
     "tox-uv >= 1.25.0",
 ]
 typing = [
-    "mypy >= 1.15",
+    "limedev[test-typing]",
     "types-PyYAML",
 ]
 unittests = [
-    "pytest >= 7.2.0",
+    "limedev[test-unittests]",
 ]
 
 [tool.limedev]
