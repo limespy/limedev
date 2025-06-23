@@ -21,7 +21,7 @@ runs:
       build-number: ${{ inputs.mode == 'test' }}
   - name: debug
     shell: bash
-    run:
+    run: |
       echo "$ACTION_REPO"
       echo "$ACTION_REF"
   - name: Publish
