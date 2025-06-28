@@ -50,7 +50,7 @@ jobs:
         git push
 
         git checkout dev
-        git merge origin/release-candidate
+        git merge release-candidate -X ours
         git push
     - name: Build and publish
       if: github.event.pull_request.base.ref
