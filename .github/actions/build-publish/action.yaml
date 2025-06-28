@@ -24,7 +24,7 @@ runs:
     run: |
       unzip -p dist/limedev-*.whl *.dist-info/METADATA
   - name: Publish
-    uses: pypa/gh-action-pypi-publish@v1.9.0
+    uses: pypa/gh-action-pypi-publish@v1.12.4
     with:
       repository-url: |
         https://${{ inputs.mode == 'test' && 'test' || 'upload'
