@@ -32,6 +32,28 @@ jobs:
           .github/actions/build-publish/action.yaml
           .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
+    - name: Build
+      if: github.event.pull_request.base.ref
+          == github.event.repository.default_branch
+          || github.event.pull_request.base.ref
+          == 'release-candidate'
+      uses: ./.github/actions/package
+      with:
+        build: true
+        build-number: ${{ !github.event.pull_request.merged
+                          && github.event.pull_request.draft }}
+    - name: Publish
+      if: github.event.pull_request.base.ref
+          == github.event.repository.default_branch
+          || github.event.pull_request.base.ref
+          == 'release-candidate'
+      uses: pypa/gh-action-pypi-publish@v1.12.4
+      with:
+        repository-url: |
+          https://${{ !github.event.pull_request.merged
+                      && github.event.pull_request.draft
+                      && 'test' || 'upload'
+                      }}.pypi.org/legacy/
     - name: Merge
       uses: lime-actions/merge@latest
       with:
@@ -52,13 +74,3 @@ jobs:
         git checkout dev
         git merge release-candidate -X ours
         git push
-    - name: Build and publish
-      if: github.event.pull_request.base.ref
-          == github.event.repository.default_branch
-          || github.event.pull_request.base.ref
-          == 'release-candidate'
-      uses: ./.github/actions/build-publish
-      with:
-        mode: ${{ github.event.pull_request.base.ref
-                  == github.event.repository.default_branch
-                  && 'main' || 'test' }}
