@@ -29,4 +29,3 @@ def main(*paths: Path,
         return run(args).returncode
     else:
         os.execvp(ruff, args)
-        return 0

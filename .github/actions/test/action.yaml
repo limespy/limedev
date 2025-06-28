@@ -25,7 +25,8 @@ runs:
     shell: bash
     run: |
       echo "::group::Installing the package"
-      uv sync --all-extras --no-default-groups --group unittests
+      uv sync --all-extras --no-default-groups \
+        --group unittests --group typing
       echo "::endgroup::"
 
       echo "::group::Installing tester"

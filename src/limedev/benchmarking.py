@@ -95,7 +95,7 @@ def main(path_benchmarks: Path | None = None,
 
         elif platform == 'linux':
             import os
-            os.nice(-20 - os.nice(0)) # type: ignore[attr-defined]
+            os.nice(-20 - os.nice(0)) # type: ignore[attr-defined, unused-ignore]
     except PermissionError as error:
         if error.errno == 1:
             from warnings import warn
