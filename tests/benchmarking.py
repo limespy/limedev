@@ -1,9 +1,10 @@
 """Benchmarking."""
 import limedev as ld
+from limedev import eng_round
 from limedev import readme
-from limedev.test import BenchmarkResultsType
-from limedev.test import eng_round
-from limedev.test import run_timed
+from limedev.benchmarking import BenchmarkResultsType
+from limedev.benchmarking import run_timed
+
 
 def main() -> BenchmarkResultsType:
     """Called by the benchmark handler."""

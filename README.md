@@ -38,7 +38,7 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.7.1 2025-06-19 <!-- omit in toc -->
+## 0.7.1 2025-06-28 <!-- omit in toc -->
 
 - Testing toolkit updated
 - Command `test` replaced with `limedev`

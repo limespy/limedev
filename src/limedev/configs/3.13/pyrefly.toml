@@ -1,0 +1,32 @@
+###### configuring what to type check and where to import from
+
+# check all files in "."
+project-includes = ["."]
+# exclude dotfiles
+project-excludes = ["**/.[!/.]*", "**/*venv/**"]
+# import project files from "."
+search-path = ["."]
+# do not include any third-party packages
+site-package-path = []
+
+###### configuring your python environment
+
+# assume we're running on linux, regardless of the actual current platform
+python-platform = "linux"
+# assume the Python version we're using is 3.10, without querying an interpreter
+python-version = "3.13"
+# query the default Python interpreter on your system, if installed
+# and `python_platform`, `python-version`, or `site-package-path` are unset.
+# python-interpreter = null # this is commented out because there are no `null` values in TOML
+
+#### configuring your type check settings
+
+replace-imports-with-any = []
+ignore-errors-in-generated-code = false
+use-untyped-imports = false
+ignore-missing-source = false
+
+[errors]
+# this is an empty table, meaning all errors are enabled by default
+
+# no `[[sub-config]]` entries are included, since there are none by default
