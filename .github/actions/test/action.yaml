@@ -29,7 +29,7 @@ runs:
       echo "::endgroup::"
 
       echo "::group::Installing tester"
-      uv pip install limedev[test-unittests]
+      uv pip install limedev[unittesting,typing]
       echo "::endgroup::"
 
   - name: Run tests | Windows
@@ -39,7 +39,8 @@ runs:
       .\.venv\Scripts\activate.ps1
 
       echo "::group::Running tests"
-      limedev unittests
+      limedev typecheck
+      limedev unittest
       echo "::endgroup::"
 
   - name: Run tests | Linux & MacOS
@@ -49,7 +50,8 @@ runs:
       . ./.venv/bin/activate
 
       echo "::group::Running tests"
-      limedev unittests
+      limedev typecheck
+      limedev unittest
       echo "::endgroup::"
 
   - name: Unsupported OS
@@ -58,5 +60,5 @@ runs:
         && runner.os != 'macOS'
     shell: bash
     run: |
-      echo "$RUNNER_OS"
+      echo "$RUNNER_OS is unsupported"
       exit 101
