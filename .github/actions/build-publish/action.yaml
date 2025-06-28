@@ -29,5 +29,5 @@ runs:
     uses: pypa/gh-action-pypi-publish@v1.9.0
     with:
       repository-url: |
-        'https://${{ inputs.mode == 'test' && 'test' || 'upload'
-                     }}.pypi.org/legacy/'
+        https://${{ inputs.mode == 'test' && 'test' || 'upload'
+                     }}.pypi.org/legacy/
