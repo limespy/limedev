@@ -19,6 +19,9 @@ runs:
     with:
       build: true
       build-number: ${{ inputs.mode == 'test' }}
+  - name: Check metadata
+    run: |
+      unzip -p dist/limedev-*.whl *.dist-info/METADATA
   - name: Publish
     uses: pypa/gh-action-pypi-publish@v1.9.0
     with:
