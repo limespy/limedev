@@ -23,7 +23,7 @@ outputs:
     description: Distributions artifacts
     value: ${{ inputs.dists-name }}
   version:
-    description:
+    description: Version indentifier used
     value: ${{ steps.version.outputs.version }}
 
 runs:
@@ -80,6 +80,7 @@ runs:
     with:
       from: 'pyproject.toml'
   - name: Upload distributions
+    if: inputs.build == 'true'
     uses: actions/upload-artifact@v4
     with:
       name: ${{ inputs.dists-name }}

@@ -1,0 +1,49 @@
+name: Package
+run-name: Packaging ${{ github.ref_name }}
+
+on:
+  workflow_call:
+    inputs:
+      build-number:
+        description: Whether to append a build number
+        required: false
+        type: boolean
+      release-candidate:
+        description: Whether to create a release candidate
+        required: false
+        type: boolean
+    outputs:
+      dists-name:
+        description: Name of the distributions artifacts
+        value: ${{ jobs.package.outputs.dists-name }}
+      version:
+        description: Version indentifier used
+        value: ${{ jobs.package.outputs.version }}
+
+jobs:
+  package:
+    outputs:
+      dists-name: ${{ steps.package.outputs.dists-name }}
+      version: ${{ steps.package.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          dependencies/
+          readme/
+          src/
+          LICENSE.txt
+          pyproject.toml
+          README.md
+          .github/actions/package/action.yaml
+        sparse-checkout-cone-mode: false
+    - name: Package
+      id: package
+      uses: ./.github/actions/package
+      with:
+        build: true
+        build-number: ${{ github.event.action != 'closed'
+                          && github.event.pull_request.draft }}
+        release-candidate: ${{ !github.event.pull_request.draft}}
