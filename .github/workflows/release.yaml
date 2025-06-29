@@ -24,6 +24,9 @@ jobs:
       id-token: write
 
   release-gh:
+    needs: release-pypi
+    if: github.event.pull_request.merged
+        || !github.event.pull_request.draft
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -37,8 +40,6 @@ jobs:
           pyproject.toml
         sparse-checkout-cone-mode: false
     - name: GH Release
-      if: github.event.pull_request.merged
-          || !github.event.pull_request.draft
       uses: lime-actions/gh-release@latest
       with:
         message: ${{ github.event.action != 'closed'
