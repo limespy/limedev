@@ -61,9 +61,9 @@ runs:
       limedev package \
         ${{ inputs.build == 'true' && '--build' || '' }} \
         ${{ inputs.build-number == 'true' && '--build-number' || '' }} \
-        ${{ steps-release-candidate.outputs.rc
+        ${{ steps.release-candidate.outputs.rc
             && format('--release-candidate={0}',
-                      steps-release-candidate.outputs.rc)
+                      steps.release-candidate.outputs.rc)
             || ''}}
       echo "::endgroup::"
   - name: Version
