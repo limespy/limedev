@@ -14,10 +14,18 @@ inputs:
     description: Whether to create a release candidate
     required: false
     default: 'false'
+  dists-name:
+    description: Name of the distributions artifacts
+    required: false
+    default: 'dists'
 outputs:
+  dists-name:
+    description: Distributions artifacts
+    value: ${{ inputs.dists-name }}
   version:
     description:
     value: ${{ steps.version.outputs.version }}
+
 runs:
   using: 'composite'
   steps:
@@ -71,3 +79,8 @@ runs:
     uses: lime-actions/version@latest
     with:
       from: 'pyproject.toml'
+  - name: Upload distributions
+    uses: actions/upload-artifact@v4
+    with:
+      name: ${{ inputs.dists-name }}
+      path: dist/

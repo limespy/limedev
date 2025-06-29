@@ -6,19 +6,23 @@ on:
     types:
     - submitted
 
+permissions:
+  contents: read
+
 jobs:
   tests:
     if: github.event.review.state == 'approved'
     uses: ./.github/workflows/test-functional.yaml
 
-  publish:
+  package:
     needs: tests
     if: github.event.pull_request.base.ref
         == github.event.repository.default_branch
         || github.event.pull_request.base.ref
         == 'release-candidate'
-    permissions:
-      id-token: write
+    outputs:
+      dists-name: ${{ steps.package.outputs.dists-name }}
+      version: ${{ steps.package.outputs.version }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -34,15 +38,25 @@ jobs:
           .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
     - name: Package
+      id: package
       uses: ./.github/actions/package
       with:
         build: true
         build-number: ${{ github.event.pull_request.base.ref
-                          != github.event.repository.default_branch
-                          && github.event.pull_request.draft }}
-        release-candidate: ${{ github.event.pull_request.base.ref
-                               != github.event.repository.default_branch
-                               && !github.event.pull_request.draft}}
+                          != github.event.repository.default_branch}}
+        release-candidate: false
+
+  publish:
+    needs: package
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Retrieve release distributions
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ needs.package.outputs.dists-name }}
+        path: dist/
     - name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
@@ -54,8 +68,12 @@ jobs:
                       }}.pypi.org/legacy/
 
   merge:
-    needs: publish
-    if: github.event.review.state == 'approved'
+    needs:
+    - tests
+    - publish
+    if: needs.publish.result == 'success'
+        || needs.publish.result == 'skipped'
+        && needs.tests.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
