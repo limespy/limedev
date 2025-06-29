@@ -19,9 +19,41 @@ jobs:
     needs: tests
     if: github.event.action != 'closed'
         || github.event.pull_request.merged
-    uses: ./.github/workflows/publish.yaml
     permissions:
       id-token: write
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          LICENSE.txt
+          pyproject.toml
+          README.md
+          dependencies/
+          readme/
+          src/
+          .github/actions/package/action.yaml
+        sparse-checkout-cone-mode: false
+    - name: Package
+      uses: ./.github/actions/package
+      with:
+        build: true
+        build-number: ${{ github.event.pull_request.base.ref
+                          != github.event.repository.default_branch
+                          && github.event.pull_request.draft }}
+        release-candidate: ${{ github.event.pull_request.base.ref
+                               != github.event.repository.default_branch
+                               && !github.event.pull_request.draft}}
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.12.4
+      with:
+        repository-url: |
+          https://${{ github.event.pull_request.base.ref
+                      != github.event.repository.default_branch
+                      && github.event.pull_request.draft
+                      && 'test' || 'upload'
+                      }}.pypi.org/legacy/
 
   release-gh:
     needs: release-pypi
