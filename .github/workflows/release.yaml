@@ -14,13 +14,18 @@ on:
 jobs:
   tests:
     uses: ./.github/workflows/test-functional.yaml
-  release:
+
+  release-pypi:
     needs: tests
     if: github.event.action != 'closed'
         || github.event.pull_request.merged
+    uses: ./.github/workflows/publish.yaml
+    permissions:
+      id-token: write
+
+  release-gh:
     permissions:
       contents: write
-      id-token: write
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -29,32 +34,8 @@ jobs:
         fetch-depth: 0
         fetch-tags: true
         sparse-checkout: |
-          LICENSE.txt
           pyproject.toml
-          README.md
-          dependencies/
-          readme/
-          src/
-          .github/actions/build-publish/action.yaml
-          .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
-    - name: Package
-      id: package
-      uses: ./.github/actions/package
-      with:
-        build: true
-        build-number: ${{ !github.event.pull_request.merged
-                          && github.event.pull_request.draft }}
-        release-candidate: ${{ !github.event.pull_request.merged
-                               && !github.event.pull_request.draft }}
-    - name: Publish
-      uses: pypa/gh-action-pypi-publish@v1.12.4
-      with:
-        repository-url: |
-          https://${{ !github.event.pull_request.merged
-                      && github.event.pull_request.draft
-                      && 'test' || 'upload'
-                      }}.pypi.org/legacy/
     - name: GH Release
       if: github.event.pull_request.merged
           || !github.event.pull_request.draft
