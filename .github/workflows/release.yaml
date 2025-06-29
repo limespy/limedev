@@ -38,12 +38,15 @@ jobs:
           .github/actions/build-publish/action.yaml
           .github/actions/package/action.yaml
         sparse-checkout-cone-mode: false
-    - name: Build
+    - name: Package
+      id: package
       uses: ./.github/actions/package
       with:
         build: true
         build-number: ${{ !github.event.pull_request.merged
                           && github.event.pull_request.draft }}
+        release-candidate: ${{ !github.event.pull_request.merged
+                               && !github.event.pull_request.draft }}
     - name: Publish
       uses: pypa/gh-action-pypi-publish@v1.12.4
       with:
@@ -53,7 +56,8 @@ jobs:
                       && 'test' || 'upload'
                       }}.pypi.org/legacy/
     - name: GH Release
-      if: ${{ !github.event.pull_request.draft }}
+      if: github.event.pull_request.merged
+          || !github.event.pull_request.draft
       uses: lime-actions/gh-release@latest
       with:
         message: ${{ github.event.action != 'closed'
