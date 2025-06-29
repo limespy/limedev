@@ -1,3 +1,7 @@
+# 0.7.1.1 2025-06-28
+
+- Publishing process fixes
+
 # 0.7.1 2025-06-28
 
 - Testing toolkit updated
