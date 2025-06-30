@@ -15,9 +15,18 @@ def __getattr__(name: str) -> Callable[..., int]:
     if name == 'readme':
         from .readme import main as _main
         return _main
-    if name in {'benchmarking', 'linting', 'profiling', 'typing', 'unittests'}:
-        from . import test
-        return getattr(test, name)
+    tools = {'benchmark': 'benchmarking',
+             'lint': 'linting',
+             'profile': 'profiling',
+             'typecheck': 'typing',
+             'unittest': 'unittesting'}
+    if module_name := tools.get(name):
+        from importlib import import_module
+        from sys import modules
+
+        module = import_module(f'.{module_name}', __package__)
+        setattr(modules[__package__], module_name, module)
+        return module.main
 
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 # ======================================================================
