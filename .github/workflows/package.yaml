@@ -44,6 +44,5 @@ jobs:
       uses: ./.github/actions/package
       with:
         build: true
-        build-number: ${{ github.event.action != 'closed'
-                          && github.event.pull_request.draft }}
-        release-candidate: ${{ !github.event.pull_request.draft}}
+        build-number: ${{ inputs.build-number }}
+        release-candidate: ${{ inputs.release-candidate }}
