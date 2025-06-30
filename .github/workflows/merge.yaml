@@ -40,7 +40,16 @@ jobs:
   debug:
     needs: tests
     runs-on: ubuntu-latest
-    if: needs.tests.result == 'skipped'
+    if: always() && needs.tests.result == 'skipped'
+    steps:
+      - run: |
+          echo "TESTS RESULT: '${{ needs.tests.result }}'"
+          echo "${{ github.event.pull_request.base.ref }}"
+
+  debug-neg:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: always() && needs.tests.result != 'skipped'
     steps:
       - run: |
           echo "TESTS RESULT: '${{ needs.tests.result }}'"
@@ -68,12 +77,13 @@ jobs:
   debug4:
     needs: tests
     runs-on: ubuntu-latest
-    if: needs.tests.result == 'success'
-        || needs.tests.result == 'skipped'
-        && (github.event.pull_request.base.ref
-            == github.event.repository.default_branch
-            || github.event.pull_request.base.ref
-            == 'release-candidate')
+    if: always()
+        && ( needs.tests.result == 'success'
+             || needs.tests.result == 'skipped'
+             && (github.event.pull_request.base.ref
+                 == github.event.repository.default_branch
+                 || github.event.pull_request.base.ref
+                 == 'release-candidate'))
     steps:
       - run: |
           echo "TESTS RESULT: '${{ needs.tests.result }}'"
