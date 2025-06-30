@@ -60,7 +60,8 @@ jobs:
           echo "failed=x" >> "$GITHUB_OUTPUT"
         else
           echo "::group::Matching paths"
-          echo "matches=${"$(grep -cE $PATTERN <<< "$PATHS")"/0/}" \
+          NUMBER=$(grep -cE $PATTERN <<< "$PATHS")
+          echo "matches=${NUMBER/0/}" \
           >> "$GITHUB_OUTPUT"
           echo "::endgroup::"
         fi
