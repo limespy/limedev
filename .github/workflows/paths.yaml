@@ -41,7 +41,7 @@ jobs:
       env:
         PATHS: ${{ inputs.paths }}
       run: |
-        echo pattern="${PATTERN//$'\n'/|}"
+        echo pattern="${PATHS//$'\n'/|}"
     - name: Checkout PR code
       uses: actions/checkout@v4
       with:
@@ -51,7 +51,7 @@ jobs:
       env:
         PATTERN: ${{ steps.pattern.outputs.pattern }}
       run: |
-        echo $PATTERN
+        echo "$PATTERN"
         echo "::group::Diff"
         PATHS="$(git diff ${{ inputs.before }} ${{ inputs.after }} --name-only)"
         echo "::endgroup::"
