@@ -59,6 +59,8 @@ runs:
 
       if [ -n "$NUMBER" ]; then
         echo "rc=$(("$NUMBER" + 1))" >> "$GITHUB_OUTPUT"
+      else
+        echo "rc=1" >> "$GITHUB_OUTPUT"
       fi
   - name: Install dependencies and package
     id: package
