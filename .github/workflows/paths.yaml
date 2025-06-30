@@ -53,7 +53,7 @@ jobs:
       run: |
         echo $PATTERN
         echo "::group::Diff"
-        PATHS="$(git diff {inputs.before} {inputs.after} --name-only)"
+        PATHS="$(git diff ${{ inputs.before }} ${{ inputs.after }} --name-only)"
         echo "::endgroup::"
 
         if [ -z "$PATHS" ]; then
