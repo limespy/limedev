@@ -37,11 +37,13 @@ jobs:
       id: test-build-number
       uses: ./.github/actions/package
       with:
+        build: false
         build-number: true
     - name: Test release candidate
       id: test-release-candidate
       uses: ./.github/actions/package
       with:
+        build: false
         release-candidate: true
     - name: Test release candidate
       id: test-release-build
