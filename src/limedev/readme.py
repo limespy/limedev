@@ -201,10 +201,7 @@ def make(package,
 #=======================================================================
 def main() -> int:
     """Command line interface entry point."""
-    try:
-        import tomllib # pylint: disable=import-outside-toplevel
-    except ModuleNotFoundError:
-        import tomli as tomllib # type: ignore # pylint: disable=import-outside-toplevel
+    import tomllib
 
     pyproject: Pyproject = tomllib.loads(( # type: ignore[assignment]
         PATH_PROJECT / 'pyproject.toml').read_text())

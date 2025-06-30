@@ -1,0 +1,3 @@
+[rules]
+unused-ignore-comment = "error"
+redundant-cast = "error"

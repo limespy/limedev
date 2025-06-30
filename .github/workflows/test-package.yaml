@@ -7,38 +7,25 @@ on:
       - main
       - release-candidate
     paths:
-      - pyproject.toml
-      - src/*
-      - readme/*
       - .github/workflows/test-packaging.yaml
       - .github/actions/package/action.yaml
-  pull_request:
-    branches:
-      - main
-    paths:
-      - pyproject.toml
-      - src/*
+      - dependencies/*
       - readme/*
-      - .github/workflows/test-packaging.yaml
-      - .github/actions/package/action.yaml
+      - src/*
+      - LICENSE.txt
+      - pyproject.toml
 
 jobs:
   packaging:
+    if: github.event_name != 'pull_request' || !github.event.pull_request.draft
+    uses: ./.github/workflows/package.yaml
+    with:
+      release-candidate: true
+
+  checks:
+    needs: packaging
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        sparse-checkout: |
-          .github/actions/package/action.yaml
-          pyproject.toml
-          dependencies/
-          readme/
-          src/
-        sparse-checkout-cone-mode: false
-    - name: Package
-      uses: ./.github/actions/package
-      with:
-        build: false
+    - name: Checks
+      run: |
+        echo 'test'

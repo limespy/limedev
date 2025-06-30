@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools>=64.0",
+    "setuptools>=80.0",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -13,7 +13,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -26,9 +25,9 @@ license = "MIT"
 license-files = [
     "LICENSE.txt",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 readme = "README.md"
-version = "0.7.0"
+version = "0.7.1.2"
 dynamic = [
     "dependencies",
     "optional-dependencies",
@@ -38,9 +37,9 @@ dynamic = [
 limedev = "limedev._cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Limespy/limedev"
-Changelog = "https://github.com/Limespy/limedev/blob/main/README.md#Changelog"
-"Issue Tracker" = "https://github.com/Limespy/limedev/issues"
+Homepage = "https://github.com/limespy/limedev"
+Changelog = "https://github.com/limespy/limedev/blob/main/README.md#Changelog"
+"Issue Tracker" = "https://github.com/limespy/limedev/issues"
 
 [dependency-groups]
 dev = [
@@ -54,27 +53,27 @@ dev = [
     { include-group = "unittests" },
 ]
 benchmarking = [
-    "limedev[test-benchmarking]",
+    "limedev[benchmarking]",
 ]
 linting = [
-    "limedev[test-linting]",
+    "limedev[linting]",
 ]
 packaging = [
     "limedev[readme]",
 ]
 profiling = [
-    "limedev[test-profiling]",
+    "limedev[profiling]",
 ]
 tox = [
     "tox >= 4.22",
     "tox-uv >= 1.25.0",
 ]
 typing = [
-    "mypy >= 1.15",
+    "limedev[typing]",
     "types-PyYAML",
 ]
 unittests = [
-    "pytest >= 7.2.0",
+    "limedev[unittesting]",
 ]
 
 [tool.limedev]
@@ -88,29 +87,35 @@ file = [
 [tool.setuptools.dynamic.optional-dependencies.all]
 file = "dependencies/requirements_all.txt"
 
+[tool.setuptools.dynamic.optional-dependencies.benchmarking]
+file = "dependencies/requirements_benchmarking.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.linting]
+file = "dependencies/requirements_linting.txt"
+
 [tool.setuptools.dynamic.optional-dependencies.package]
 file = "dependencies/requirements_package.txt"
+
+[tool.setuptools.dynamic.optional-dependencies.profiling]
+file = "dependencies/requirements_profiling.txt"
 
 [tool.setuptools.dynamic.optional-dependencies.readme]
 file = "dependencies/requirements_readme.txt"
 
-[tool.setuptools.dynamic.optional-dependencies.test]
-file = "dependencies/requirements_test.txt"
+[tool.setuptools.dynamic.optional-dependencies.typing]
+file = "dependencies/requirements_typing.txt"
 
-[tool.setuptools.dynamic.optional-dependencies.test-benchmarking]
-file = "dependencies/requirements_test-benchmarking.txt"
+[tool.setuptools.dynamic.optional-dependencies.typing-mypy]
+file = "dependencies/requirements_typing-mypy.txt"
 
-[tool.setuptools.dynamic.optional-dependencies.test-linting]
-file = "dependencies/requirements_test-linting.txt"
+[tool.setuptools.dynamic.optional-dependencies.typing-pyrefly]
+file = "dependencies/requirements_typing-pyrefly.txt"
 
-[tool.setuptools.dynamic.optional-dependencies.test-profiling]
-file = "dependencies/requirements_test-profiling.txt"
+[tool.setuptools.dynamic.optional-dependencies.typing-ty]
+file = "dependencies/requirements_typing-ty.txt"
 
-[tool.setuptools.dynamic.optional-dependencies.test-typing]
-file = "dependencies/requirements_test-typing.txt"
-
-[tool.setuptools.dynamic.optional-dependencies.test-unittests]
-file = "dependencies/requirements_test-unittests.txt"
+[tool.setuptools.dynamic.optional-dependencies.unittesting]
+file = "dependencies/requirements_unittesting.txt"
 
 [tool.setuptools.packages.find]
 where = [
