@@ -33,18 +33,24 @@ jobs:
       uses: ./.github/actions/package
       with:
         build: false
+    - name: Restore
+      run: git restore --source=HEAD
     - name: Test build number
       id: test-build-number
       uses: ./.github/actions/package
       with:
         build: false
         build-number: true
+    - name: Restore
+      run: git restore --source=HEAD
     - name: Test release candidate
       id: test-release-candidate
       uses: ./.github/actions/package
       with:
         build: false
         release-candidate: true
+    - name: Restore
+      run: git restore --source=HEAD
     - name: Test release candidate
       id: test-release-build
       uses: ./.github/actions/package
