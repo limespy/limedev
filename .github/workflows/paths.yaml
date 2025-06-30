@@ -23,7 +23,7 @@ on:
         default: ${{ github.event.pull_request.commits }}
     outputs:
       matches:
-        description: Number of matched files if matches, else empty string.
+        description: '"true" if matches, else empty string.'
         value: ${{ jobs.match-files.outputs.matches }}
 
 permissions:
@@ -36,12 +36,6 @@ jobs:
       matches: ${{ steps.paths.outputs.matches
                    || steps.paths-fallback.outputs.matches }}
     steps:
-    - name: Parse paths input
-      id: pattern
-      env:
-        PATHS: ${{ inputs.paths }}
-      run: |
-        echo pattern="${PATHS//$'\n'/|}"
     - name: Checkout PR code
       uses: actions/checkout@v4
       with:
@@ -49,9 +43,9 @@ jobs:
     - name: Count matching paths
       id: paths
       env:
-        PATTERN: ${{ steps.pattern.outputs.pattern }}
+        PATTERNS: ${{ inputs.paths }}
       run: |
-        echo "$PATTERN"
+        echo "$PATTERNS"
         echo "::group::Diff"
         PATHS="$(git diff ${{ inputs.before }} ${{ inputs.after }} --name-only)"
         echo "::endgroup::"
@@ -60,9 +54,17 @@ jobs:
           echo "failed=x" >> "$GITHUB_OUTPUT"
         else
           echo "::group::Matching paths"
-          NUMBER=$(grep -cE $PATTERN <<< "$PATHS")
-          echo "matches=${NUMBER/0/}" \
-          >> "$GITHUB_OUTPUT"
+          while read -r path; do
+            while read -r pattern; do
+              if [[ $path == $pattern ]]; then
+                echo $path
+                echo $pattern
+                echo "matches=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done < <(printf '%s\n' "$PATTERNS")
+          done <<< "$PATHS"
+
           echo "::endgroup::"
         fi
     - name: Retry checkout with fetching all
@@ -74,11 +76,23 @@ jobs:
       id: paths-fallback
       if: steps.paths.outputs.failed
       env:
-        PATTERN: ${{ steps.pattern.outputs.pattern }}
+        PATTERNS: ${{ inputs.paths }}
       run: |
+
+        echo "::group::Diff"
+        PATHS="$(git diff ${{ inputs.before }} ${{ inputs.after }} --name-only)"
+        echo "::endgroup::"
+
         echo "::group::Matching paths"
-        NUMBER="$(git diff {inputs.before} {inputs.after} --name-only \
-                  | grep -c $PATTERN)"
-        echo "matches=${NUMBER/0/}"
+        while read -r path; do
+            while read -r pattern; do
+              if [[ $path == $pattern ]]; then
+                echo $path
+                echo $pattern
+                echo "matches=true" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            done < <(printf '%s\n' "$PATTERNS")
+          done <<< "$PATHS"
         >> "$GITHUB_OUTPUT"
         echo "::endgroup::"
