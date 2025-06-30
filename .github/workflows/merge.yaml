@@ -10,7 +10,16 @@ permissions:
   contents: read
 
 jobs:
+  not-draft:
+    if: github.event.review.state == 'approved'
+        && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+    - name: Pass
+      run: exit 0
+
   paths:
+    needs: not-draft
     if: github.event.review.state == 'approved'
     uses: ./.github/workflows/paths.yaml
     with:
