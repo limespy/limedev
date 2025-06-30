@@ -19,7 +19,7 @@ on:
       commits:
         description: Number of commits between before and after
         required: false
-        type: number
+        type: string
         default: ${{ github.event.pull_request.commits }}
     outputs:
       matches:
