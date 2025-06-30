@@ -43,6 +43,7 @@ jobs:
 
   publish:
     needs: package
+    if: always() && (needs.package.result == 'success')
     permissions:
       id-token: write
     runs-on: ubuntu-latest
