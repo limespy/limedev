@@ -6,8 +6,10 @@ on:
     paths:
     - .github/workflows/test-action-package.yaml
     - .github/actions/package/action.yaml
-    - src/limedev/package/**/*
+    - readme/**/*
     - src/limedev/_cli.py
+    - src/limedev/package/**/*
+    - src/limedev/readme/**/*
 
 jobs:
   create-pr:
