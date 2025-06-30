@@ -30,7 +30,7 @@ jobs:
   print:
     needs: tests
     runs-on: ubuntu-latest
-    if: needs.tests.result == 'success' || needs.tests.result == 'skipped'
+    if: always()
     steps:
       - run: |
           echo "TESTS RESULT: '${{ needs.tests.result }}'"
