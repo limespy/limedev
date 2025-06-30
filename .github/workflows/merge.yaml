@@ -20,7 +20,7 @@ jobs:
         ./.github/workflows/test-functional.yaml
       before: ${{ github.event.pull_request.base.sha }}
       after: ${{ github.event.pull_request.head.sha }}
-      commits: 0
+      commits: '0'
 
   tests:
     needs: paths
