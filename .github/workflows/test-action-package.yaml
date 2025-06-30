@@ -6,6 +6,7 @@ on:
     paths:
     - .github/workflows/test-action-package.yaml
     - .github/actions/package/action.yaml
+    - pyproject.toml
     - readme/**/*
     - src/limedev/_cli.py
     - src/limedev/package/**/*
