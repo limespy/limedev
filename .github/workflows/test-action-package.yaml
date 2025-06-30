@@ -31,6 +31,8 @@ jobs:
     - name: Test base
       id: test-base
       uses: ./.github/actions/package
+      with:
+        build: false
     - name: Test build number
       id: test-build-number
       uses: ./.github/actions/package
