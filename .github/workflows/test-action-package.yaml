@@ -34,7 +34,7 @@ jobs:
       with:
         build: false
     - name: Restore
-      run: git restore --source=HEAD
+      run: git restore --source=HEAD pyproject.toml
     - name: Test build number
       id: test-build-number
       uses: ./.github/actions/package
@@ -42,7 +42,7 @@ jobs:
         build: false
         build-number: true
     - name: Restore
-      run: git restore --source=HEAD
+      run: git restore --source=HEAD pyproject.toml
     - name: Test release candidate
       id: test-release-candidate
       uses: ./.github/actions/package
@@ -50,7 +50,7 @@ jobs:
         build: false
         release-candidate: true
     - name: Restore
-      run: git restore --source=HEAD
+      run: git restore --source=HEAD pyproject.toml
     - name: Test release candidate
       id: test-release-build
       uses: ./.github/actions/package
