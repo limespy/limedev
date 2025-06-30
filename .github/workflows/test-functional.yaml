@@ -12,15 +12,6 @@ on:
       - readme/*
       - tests/*
       - .github/workflows/test-functional.yaml
-  pull_request:
-    branches:
-      - main
-    paths:
-      - pyproject.toml
-      - src/*
-      - readme/*
-      - tests/*
-      - .github/workflows/test-functional.yaml
   workflow_call:
 
 jobs:

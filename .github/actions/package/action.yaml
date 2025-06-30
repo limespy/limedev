@@ -11,9 +11,20 @@ inputs:
     required: false
     default: 'false'
   release-candidate:
-    description: What release candidate number to append.
+    description: Whether to create a release candidate
     required: false
-    default: ''
+    default: 'false'
+  dists-name:
+    description: Name of the distributions artifacts
+    required: false
+    default: 'dists'
+outputs:
+  dists-name:
+    description: Distributions artifacts
+    value: ${{ inputs.dists-name }}
+  version:
+    description: Version indentifier used
+    value: ${{ steps.version.outputs.version }}
 
 runs:
   using: 'composite'
@@ -22,11 +33,37 @@ runs:
     uses: astral-sh/setup-uv@v6
     with:
       enable-cache: true
-  - name: "Set up Python"
+  - name: Set up Python
     uses: actions/setup-python@v5
     with:
       python-version-file: 'pyproject.toml'
-  - name: Install dependencies and build
+  - name: Release candidate
+    id: release-candidate
+    if: inputs.release-candidate == 'true'
+    shell: bash
+    run: |
+      echo "::group::Getting the name"
+
+      NAME="$(sed -nE \
+                's/^name\s*=\s*("|'\'')([^"'\'']+)("|'\'')/\2/p' \
+                 pyproject.toml)"
+      echo "name=$NAME"
+      echo "::endgroup::"
+
+      echo "::group::Getting the number"
+      NUMBER="$(pip index versions --pre "$NAME" \
+                | sed -nE \
+                    --expression='s/\s*Available versions:\s*[^,r]+(rc([0-9]+))?.*/\2/p')"
+      echo "number=$NUMBER"
+      echo "::endgroup::"
+
+      if [ -n "$NUMBER" ]; then
+        echo "rc=$(("$NUMBER" + 1))" >> "$GITHUB_OUTPUT"
+      else
+        echo "rc=1" >> "$GITHUB_OUTPUT"
+      fi
+  - name: Install dependencies and package
+    id: package
     shell: bash
     run: |
       echo "::group::Installing the package"
@@ -43,7 +80,19 @@ runs:
       limedev package \
         ${{ inputs.build == 'true' && '--build' || '' }} \
         ${{ inputs.build-number == 'true' && '--build-number' || '' }} \
-        ${{ inputs.release-candidate
-            && format('--release-candidate={0}', inputs.release-candidate)
+        ${{ steps.release-candidate.outputs.rc
+            && format('--release-candidate={0}',
+                      steps.release-candidate.outputs.rc)
             || ''}}
       echo "::endgroup::"
+  - name: Version
+    id: version
+    uses: lime-actions/version@latest
+    with:
+      from: 'pyproject.toml'
+  - name: Upload distributions
+    if: inputs.build == 'true'
+    uses: actions/upload-artifact@v4
+    with:
+      name: ${{ inputs.dists-name }}
+      path: dist/

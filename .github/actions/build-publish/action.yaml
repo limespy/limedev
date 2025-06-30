@@ -19,9 +19,13 @@ runs:
     with:
       build: true
       build-number: ${{ inputs.mode == 'test' }}
+  - name: Check metadata
+    shell:
+    run: |
+      unzip -p dist/limedev-*.whl *.dist-info/METADATA
   - name: Publish
-    uses: pypa/gh-action-pypi-publish@v1
+    uses: pypa/gh-action-pypi-publish@v1.12.4
     with:
       repository-url: |
-        'https://${{ inputs.mode == 'test' && 'test' || 'upload'
-                     }}.pypi.org/legacy/'
+        https://${{ inputs.mode == 'test' && 'test' || 'upload'
+                     }}.pypi.org/legacy/

@@ -8,8 +8,9 @@ distributions.
 """
 # ======================================================================
 # IMPORT
-import time
+import tomllib # type: ignore[unresolved-inport]
 from pathlib import Path
+from time import time
 from typing import TYPE_CHECKING
 
 import tomli_w
@@ -17,11 +18,6 @@ import tomli_w
 from .._aux import import_from_path
 from .._aux import PATH_PROJECT
 from .._aux import upsearch
-
-try:
-    import tomllib
-except ModuleNotFoundError:
-    import tomli as tomllib
 # ======================================================================
 # Hinting types
 if TYPE_CHECKING:
@@ -89,7 +85,8 @@ def construct_options(project_name: str,
     return all_options
 # ======================================================================
 def package(build: bool = False,
-            build_number: bool = False) -> int:
+            build_number: bool = False,
+            release_candidate: int = 0) -> int:
     """Command line interface entry point.
 
     Builds README and the package
@@ -143,9 +140,13 @@ def package(build: bool = False,
         readme_text_pypi = readme_text_pypi.replace('(./',
                                                     f'({source_url}/blob/main/')
     # ------------------------------------------------------------------
+    # Release candidate
+    if release_candidate:
+        project_info['version'] += f'rc{release_candidate}'
+    # ------------------------------------------------------------------
     # Build number
     if build_number:
-        project_info['version'] += f'.{time.time():.0f}'
+        project_info['version'] += f'.{time():.0f}'
     # ------------------------------------------------------------------
     # RUNNING THE BUILD
 

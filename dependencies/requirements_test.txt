@@ -1,5 +1,0 @@
-limedev[test-benchmarking]
-limedev[test-linting]
-limedev[test-profiling]
-limedev[test-typing]
-limedev[test-unittests]

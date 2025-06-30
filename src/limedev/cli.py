@@ -1,5 +1,4 @@
 """Command line interface framework."""
-import enum
 import inspect
 import sys
 from collections.abc import Callable
@@ -101,7 +100,7 @@ def _tuple(args: list[str],
            ) -> tuple[Any]:
     """Handles a tuple."""
     if len(argtypes) == 2 and argtypes[1] is Ellipsis:
-        return _collection(args, cast(ArgType, argtypes[0]), tuplelike)
+        return _collection(args, argtypes[0], tuplelike)
 
     if len(argtypes) != len(args):
         raise TypeConversionError(f"length of '{args!r}' not {len(argtypes)}")
@@ -187,13 +186,13 @@ def _dict(arg: str, keytype: ArgType, valuetype: ArgType, dictlike: type
 def _generic_alias(arg: str, argtype: GenericAlias) -> Any:
     """Handles GenericAlias types, like tuple[int]."""
     basetype = argtype.__origin__
-    if issubclass(basetype, tuple):
-        return _tuple(arg.split(','), argtype.__args__, basetype)
-    if issubclass(basetype, dict):
+    if issubclass(basetype, tuple): # type: ignore[arg-type]
+        return _tuple(arg.split(','), argtype.__args__, basetype) # type: ignore[arg-type]
+    if issubclass(basetype, dict): # type: ignore[arg-type]
         keytype, valuetype = argtype.__args__
-        return _dict(arg, keytype, valuetype, basetype)
-    if issubclass(basetype, Collection):
-        return _collection(arg.split(','), argtype.__args__[0], basetype)
+        return _dict(arg, keytype, valuetype, basetype) # type: ignore[arg-type]
+    if issubclass(basetype, Collection): # type: ignore[arg-type]
+        return _collection(arg.split(','), argtype.__args__[0], basetype) # type: ignore[arg-type]
     raise TypeError(f'Type of {argtype}, {type(argtype)}, not supported')
 # ----------------------------------------------------------------------
 def _union(arg: str , argtype: UnionType):
@@ -206,7 +205,7 @@ def _union(arg: str , argtype: UnionType):
             errormessages.append(str(exc))
     raise TypeConversionError('\n'.join(errormessages))
 # ----------------------------------------------------------------------
-def _enum(arg: str, argtype: EnumType) -> enum.Enum:
+def _enum(arg: str, argtype: EnumType) -> EnumType:
     """Handles a Enum.
 
     Tries to be case insensitive
@@ -216,7 +215,7 @@ def _enum(arg: str, argtype: EnumType) -> enum.Enum:
     except KeyError:
         # Casefolding
         arg_cf = arg.casefold()
-        member: enum.Enum
+        member: EnumType
         for member_name, member in argtype.__members__.items():
             if member_name.casefold() == arg_cf:
                 return member
@@ -232,7 +231,7 @@ def _bool(arg: str) -> bool:
         return True
     raise TypeConversionError(f"'{arg}' not convertable to bool")
 # ----------------------------------------------------------------------
-def _convert_type(arg: str, argtype: ArgType) -> Any:
+def _convert_type(arg: str, argtype: ArgType) -> object:
     """Converts argument to annotated type."""
     try:
         if argtype in (Parameter.empty, Any, str):
