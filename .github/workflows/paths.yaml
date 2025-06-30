@@ -77,7 +77,8 @@ jobs:
         PATTERN: ${{ steps.pattern.outputs.pattern }}
       run: |
         echo "::group::Matching paths"
-        echo "matches=${"$(git diff {inputs.before} {inputs.after} --name-only \
-                           | grep -c $PATTERN)"/0/}"
+        NUMBER="$(git diff {inputs.before} {inputs.after} --name-only \
+                  | grep -c $PATTERN)"
+        echo "matches=${NUMBER/0/}"
         >> "$GITHUB_OUTPUT"
         echo "::endgroup::"
