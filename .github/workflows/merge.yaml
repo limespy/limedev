@@ -27,6 +27,16 @@ jobs:
     if: needs.paths.outputs.matches
     uses: ./.github/workflows/test-functional.yaml
 
+  print:
+    needs: tests
+    runs-on: ubuntu-latest
+    if: needs.tests.result == 'success' || needs.tests.result == 'skipped'
+    steps:
+      - run: |
+          echo "TESTS RESULT: '${{ needs.tests.result }}'"
+          echo "BASE REF: '${{ github.event.pull_request.base.ref }}'"
+          echo "DEFAULT BRANCH: '${{ github.event.repository.default_branch }}'"
+
   debug:
     needs: tests
     runs-on: ubuntu-latest
