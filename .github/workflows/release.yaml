@@ -19,24 +19,14 @@ jobs:
       paths: |
         src
         ./.github/workflows/test-functional.yaml
-      before: ${{ github.event.pull_request.base.sha }}
-      after: ${{ github.event.pull_request.head.sha }}
-
-  paths-synchronize:
-    if: github.event.action == 'synchronize'
-    uses: ./.github/workflows/paths.yaml
-    with:
-      paths: |
-        src
-        ./.github/workflows/test-functional.yaml
+      before: ${{ github.event.pull_request.before
+                  || github.event.pull_request.base.sha }}
+      after: ${{ github.event.pull_request.after
+                 || github.event.pull_request.head.sha }}
 
   tests:
-    needs:
-    - paths
-    - paths-synchronize
-    if: always()
-        && (needs.paths-synchronize.outputs.matches
-            || needs.paths.outputs.matches)
+    needs: paths
+    if: needs.paths.outputs.matches
     uses: ./.github/workflows/test-functional.yaml
 
   package:
