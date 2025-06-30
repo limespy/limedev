@@ -31,26 +31,22 @@ jobs:
     - name: Test base
       id: test-base
       uses: ./.github/actions/package
-      with:
-        build: true
-        build-number: false
-        release-candidate: false
     - name: Test build number
       id: test-build-number
       uses: ./.github/actions/package
       with:
-        build: true
         build-number: true
-        release-candidate: false
     - name: Test release candidate
       id: test-release-candidate
       uses: ./.github/actions/package
       with:
-        build: true
-        build-number: false
         release-candidate: true
+    - name: Test release candidate
+      id: test-release-build
+      uses: ./.github/actions/package
+      with:
+        build: true
     - name: Check
-      if: steps.test-release-candidate.outputs.version
       run: |
         echo "${{ steps.test-base.outputs.version }}"
         echo "${{ steps.test-build-number.outputs.version }}"
