@@ -10,13 +10,27 @@ permissions:
   contents: read
 
 jobs:
-  tests:
+  paths:
     if: github.event.review.state == 'approved'
+    uses: ./.github/workflows/paths.yaml
+    with:
+      paths: |
+        src
+        tests
+        ./.github/workflows/test-functional.yaml
+      before: ${{ github.event.pull_request.base.sha }}
+      after: ${{ github.event.pull_request.head.sha }}
+      commits: 0
+
+  tests:
+    needs: paths
+    if: needs.paths.outputs.matches
     uses: ./.github/workflows/test-functional.yaml
 
   package:
     needs: tests
     if: needs.tests.result == 'success'
+        || needs.tests.result == 'skipped'
         && github.event.pull_request.base.ref
         == github.event.repository.default_branch
         || github.event.pull_request.base.ref
