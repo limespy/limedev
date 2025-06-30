@@ -13,6 +13,16 @@ on:
 
 jobs:
   paths:
+    if: github.event.action != 'synchronize'
+    uses: ./.github/workflows/paths.yaml
+    with:
+      paths: |
+        src
+        ./.github/workflows/test-functional.yaml
+      before: ${{ github.event.pull_request.base.sha }}
+      after: ${{ github.event.pull_request.head.sha }}
+
+  paths-synchronize:
     if: github.event.action == 'synchronize'
     uses: ./.github/workflows/paths.yaml
     with:
@@ -21,8 +31,12 @@ jobs:
         ./.github/workflows/test-functional.yaml
 
   tests:
-    needs: paths
-    if: github.event.action != 'synchronize' || needs.paths.outputs.matches
+    needs:
+    - paths
+    - paths-synchronize
+    if: always()
+        && (needs.paths-synchronize.outputs.matches
+            || needs.paths.outputs.matches)
     uses: ./.github/workflows/test-functional.yaml
 
   package:
@@ -32,9 +46,9 @@ jobs:
             || needs.tests.result == 'skipped')
     uses: ./.github/workflows/package.yaml
     with:
-      build-number: ${{ github.event.action != 'closed'
+      build-number: ${{ !github.event.pull_request.merged
                         && github.event.pull_request.draft }}
-      release-candidate: ${{ !github.event.pull_request.draft}}
+      release-candidate: ${{ !github.event.pull_request.draft }}
 
   publish:
     needs: package

@@ -42,12 +42,21 @@ runs:
     if: inputs.release-candidate == 'true'
     shell: bash
     run: |
+      echo "::group::Getting the name"
+
       NAME="$(sed -nE \
                 's/^name\s*=\s*("|'\'')([^"'\'']+)("|'\'')/\2/p' \
                  pyproject.toml)"
+      echo "name=$NAME"
+      echo "::endgroup::"
+
+      echo "::group::Getting the number"
       NUMBER="$(pip index versions "$NAME" \
                 | sed -nE \
                   --expression='s/Available versions: [^,r]+(rc([0-9]+))?.*/\2/p')"
+      echo "number=$NUMBER"
+      echo "::endgroup::"
+
       if [ -n "$NUMBER" ]; then
         echo "rc=$(("$NUMBER" + 1))" >> "$GITHUB_OUTPUT"
       fi
