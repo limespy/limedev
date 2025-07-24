@@ -99,7 +99,7 @@ def package(build: bool = False,
     # BUILD INFO
 
     # Loading the pyproject TOML file
-    pyproject = tomllib.loads(path_pyproject.read_text())
+    pyproject = tomllib.loads(path_pyproject.read_text(encoding = 'utf8'))
     project_info = pyproject['project']
     pypi_name = project_info['name']
     # ------------------------------------------------------------------
@@ -162,5 +162,5 @@ def package(build: bool = False,
         from build.__main__ import main as _build
         _build([], prog = pypi_name)
 
-    path_readme.write_text(readme_text)
+    path_readme.write_text(readme_text, encoding = 'utf8')
     return 0
