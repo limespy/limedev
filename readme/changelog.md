@@ -1,6 +1,6 @@
-# 0.7.1.2 2025-06-28
+# 0.7.1.3 2025-07-24
 
-- Publishing process fixes
+- Readme encoding now utf8
 
 # 0.7.1 2025-06-28
 
