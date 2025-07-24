@@ -38,9 +38,9 @@ import limedev
 
 # Changelog <!-- omit in toc -->
 
-## 0.7.1.2 2025-07-24 <!-- omit in toc -->
+## 0.7.2 2025-07-24 <!-- omit in toc -->
 
-- Publishing process fixes
+- Readme encoding now utf8
 
 ## 0.7.1 2025-06-28 <!-- omit in toc -->
 
